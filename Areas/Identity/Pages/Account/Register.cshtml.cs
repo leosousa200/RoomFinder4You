@@ -74,7 +74,7 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
+            [Required(ErrorMessage ="É obrigatório ter um email!")]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
@@ -83,8 +83,8 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+            [Required(ErrorMessage ="É obrigatório ter uma password!")]
+            [StringLength(100, ErrorMessage = "Password demasiado pequena/grande.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
             public string Password { get; set; }
@@ -94,28 +94,23 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
             [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            [Display(Name = "Confirmar password")]
+            [Compare("Password", ErrorMessage = "A password e a password de confirmação não são iguais.")]
             public string ConfirmPassword { get; set; }
 
 
 
-            [Required]
-            [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [Required(ErrorMessage ="É obrigatório introduzir o seu nome!")]
+            [StringLength(20, ErrorMessage = "Nome demasiado pequeno/longo.", MinimumLength = 2)]
             [DataType(DataType.Text)]
             [Display(Name = "Nome")]
             public string FirstName{get;set;}
 
-            [Required]
-            [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
+            [Required(ErrorMessage ="É obrigatório introduzir o seu apelido!")]
+            [StringLength(20, ErrorMessage = "Apelido demasiado pequeno/longo.", MinimumLength = 2)]
             [DataType(DataType.Text)]
             [Display(Name = "Apelido")]
             public string LastName{get;set;}
-
-            [StringLength(20, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 2)]
-            [DataType(DataType.Text)]
-            [Display(Name = "Cidade de procura")]
-            public string CitySearch{get;set;}
         }
 
 
@@ -138,8 +133,6 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
 
                 user.FirstName = Input.FirstName;
                 user.LastName = Input.LastName;
-                if(Input.CitySearch != null)
-                    user.CitySearch = Input.CitySearch;
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 

@@ -128,7 +128,7 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
                 }
                 else
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Erro na tentativa de entrar.");
                     return Page();
                 }
             }
