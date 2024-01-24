@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RoomFinder4You.Data;
 using RoomFinder4You.Areas.Identity.Data;
+using RoomFinder4You.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
