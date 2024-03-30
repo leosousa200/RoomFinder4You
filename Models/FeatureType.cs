@@ -6,4 +6,5 @@ public class FeatureType{
     public int Id{get;set;}
     [Display(Name = "Tipo")]
     public String Name{get;set;}
+    public bool Mandatory{get;set;}
 }
