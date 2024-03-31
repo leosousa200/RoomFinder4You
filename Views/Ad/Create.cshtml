@@ -1,0 +1,65 @@
+@model RoomFinder4You.Models.Ad
+
+@{
+    ViewData["Title"] = "Criar Anúncio";
+    var featureTypesList = ViewBag.FeatureTypesMandatory as IEnumerable<SelectListItem>;
+    var featureTypesListNon = ViewBag.FeatureTypesNonMandatory as IEnumerable<SelectListItem>;
+
+}
+
+<h1>Criar Anúncio</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" style="resize: none;" class="form-control" rows="7"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="room.Price" class="control-label"></label>
+                <input name="Price" class="form-control" />
+                <span asp-validation-for="room.Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="adStatus" class="control-label"></label>
+                <select asp-for="AdStatusId" class ="form-control" asp-items="ViewBag.AdStatusId"></select>
+            </div>
+            <hr />
+            <h3> Características do quarto</h3>
+            @foreach(var item in featureTypesList){
+                <div class="form-group">
+                <label class="control-label">@item.Text<span class="text-danger">*</span></label>
+                <input name="@item.Value" class="form-control" required/>
+                </div>
+            }
+            <p class="text-danger">Características marcadas com '*' são obrigatórias!</p>
+            <hr />
+
+            <h3> Características adicionais</h3>
+            @foreach(var item in featureTypesListNon){
+                <div class="form-group">
+                <label class="control-label">@item.Text</label>
+                <input name="@item.Value" class="form-control"/>
+                </div>
+            }
+
+            <div class="form-group">
+                <input type="submit" value="Criar" class="btn btn-primary mt-1" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar à lista</a>
+</div>
+

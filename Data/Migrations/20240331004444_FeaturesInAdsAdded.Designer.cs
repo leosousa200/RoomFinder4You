@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoomFinder4You.Data;
 
@@ -10,9 +11,11 @@ using RoomFinder4You.Data;
 namespace RoomFinder4You.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240331004444_FeaturesInAdsAdded")]
+    partial class FeaturesInAdsAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.15");
@@ -277,6 +280,9 @@ namespace RoomFinder4You.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("AdId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("FeatureTypeId")
                         .HasColumnType("INTEGER");
 
@@ -288,6 +294,8 @@ namespace RoomFinder4You.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AdId");
 
                     b.HasIndex("FeatureTypeId");
 
@@ -307,11 +315,6 @@ namespace RoomFinder4You.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Sigla")
-                        .IsRequired()
-                        .HasMaxLength(3)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -413,6 +416,10 @@ namespace RoomFinder4You.Data.Migrations
 
             modelBuilder.Entity("RoomFinder4You.Models.Feature", b =>
                 {
+                    b.HasOne("RoomFinder4You.Models.Ad", null)
+                        .WithMany("Features")
+                        .HasForeignKey("AdId");
+
                     b.HasOne("RoomFinder4You.Models.FeatureType", "featureType")
                         .WithMany()
                         .HasForeignKey("FeatureTypeId")
@@ -424,6 +431,11 @@ namespace RoomFinder4You.Data.Migrations
                         .HasForeignKey("RoomId");
 
                     b.Navigation("featureType");
+                });
+
+            modelBuilder.Entity("RoomFinder4You.Models.Ad", b =>
+                {
+                    b.Navigation("Features");
                 });
 
             modelBuilder.Entity("RoomFinder4You.Models.ApplicationUser", b =>
