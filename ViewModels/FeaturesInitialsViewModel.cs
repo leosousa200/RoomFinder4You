@@ -3,7 +3,7 @@ using RoomFinder4You.Models;
 
 namespace RoomFinder4You.ViewModels
 {
-    public class FeaturesAcronymsViewModel{
+    public class FeaturesInitialsViewModel{
         public String CBP{get;set;}
         public String AQU{get;set;}
         public String TAM{get;set;}

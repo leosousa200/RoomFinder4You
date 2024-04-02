@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using RoomFinder4You.Data;
 using RoomFinder4You.Models;
 using RoomFinder4You.ViewModels;
@@ -45,11 +46,16 @@ namespace RoomFinder4You
                 .Include(a => a.User)
                 .Include(a => a.adStatus)
                 .Include(a => a.room)
+                .ThenInclude(a => a.Features)
+                .ThenInclude(a => a.featureType)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ad == null)
             {
                 return NotFound();
             }
+            Console.WriteLine("Formato: " + ad.PhotoFormat);
+            Console.WriteLine("Info: " + ad.MainPhoto);
+
 
             return View(ad);
         }
@@ -58,8 +64,8 @@ namespace RoomFinder4You
         public IActionResult Create()
         {
             ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Status");
-            ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Sigla", "Name");
-            ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Sigla", "Name");
+            ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Initials", "Name");
+            ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Initials", "Name");
 
             return View();
         }
@@ -69,32 +75,112 @@ namespace RoomFinder4You
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,AdStatusId,room.Price")] Ad ad, float price)
+        public async Task<IActionResult> Create([Bind("Id,Title,Description,AdStatusId,room.Price")] Ad ad, float price,[Bind("CBP,AQU,TAM,MOB,ELE,AGU,GAS")] FeaturesInitialsViewModel featuresInitials, IFormFile imagem)
         {
-
+                Console.WriteLine("ENTREI NO CREATE!");
                 ModelState.Remove(nameof(ad.room));
                 ModelState.Remove(nameof(ad.User));
                 ModelState.Remove(nameof(ad.UserID));
                 ModelState.Remove(nameof(ad.adStatus));
 
+                if(imagem == null)
+                    Console.WriteLine("É NULO!");
+
+
+               
+                
             if (ModelState.IsValid)
             {
+                Console.WriteLine("ENTREI NO valid!");
+
                 // Room logic
                 Room room = new Room();
                 room.Features = new List<Feature>();
                 room.Price = price;
                 ad.room = room;
 
+        
+                Console.WriteLine("BLOCK");
+
+                //Features logic
+                if(String.IsNullOrEmpty(featuresInitials.CBP)|| String.IsNullOrEmpty(featuresInitials.AQU) || String.IsNullOrEmpty(featuresInitials.TAM) || String.IsNullOrEmpty(featuresInitials.MOB))
+                    return View(ad);
+
+                Console.WriteLine("PASSEI BLOCK");
+
+                Feature featureCBP = new Feature();
+                featureCBP.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("CBP"));
+                featureCBP.Value = featuresInitials.CBP;
+                room.Features.Add(featureCBP);
+
+                Feature featureAQU = new Feature();
+                featureAQU.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AQU"));
+                featureAQU.Value = featuresInitials.AQU;
+                room.Features.Add(featureAQU);
+
+                Feature featureTAM = new Feature();
+                featureTAM.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("TAM"));
+                featureTAM.Value = featuresInitials.TAM;
+                room.Features.Add(featureTAM);
+
+                Feature featureMOB = new Feature();
+                featureMOB.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("MOB"));
+                featureMOB.Value = featuresInitials.MOB;
+                room.Features.Add(featureMOB);
+
+                // non mandatory features ELE,AGU,GAS
+                if(!String.IsNullOrEmpty(featuresInitials.ELE)){
+                Feature featureELE = new Feature();
+                featureELE.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("ELE"));
+                featureELE.Value = featuresInitials.ELE;
+                room.Features.Add(featureELE);
+                }
+
+                if(!String.IsNullOrEmpty(featuresInitials.AGU)){
+                Feature featureAGU = new Feature();
+                featureAGU.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AGU"));
+                featureAGU.Value = featuresInitials.AGU;
+                room.Features.Add(featureAGU);
+                }
+    
+                if(!String.IsNullOrEmpty(featuresInitials.GAS)){
+                Feature featureGAS = new Feature();
+                featureGAS.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("GAS"));
+                featureGAS.Value = featuresInitials.GAS;
+                room.Features.Add(featureGAS);
+                }
+
+                //image handling
+                
+                if(imagem != null){
+                Console.WriteLine("Content Type: " + imagem.ContentType);
+
+                ad.PhotoFormat = imagem.ContentType;
+                var memoryStream = new MemoryStream();
+                imagem.CopyTo(memoryStream);
+                ad.MainPhoto = memoryStream.ToArray();
+
+                Console.WriteLine("Fim de processamento de imagem");
+                }else{
+                    Console.WriteLine("No imagem!");
+                }
+
+                // link user
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 ad.UserID = userId;
+
+
+                // end
                 _context.Add(ad);
+                Console.WriteLine("Ad final: " + ad.PhotoFormat);
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
             ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Status");
-            ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Sigla", "Name");
-            ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Sigla", "Name");
+            ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Initials", "Name");
+            ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Initials", "Name");
 
             return View(ad);
         }

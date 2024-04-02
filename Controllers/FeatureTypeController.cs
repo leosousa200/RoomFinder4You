@@ -58,12 +58,12 @@ namespace RoomFinder4You
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Sigla,IsMandatory")] FeatureType featureType)
+        public async Task<IActionResult> Create([Bind("Id,Name,Initials,IsMandatory")] FeatureType featureType)
         {
             if (ModelState.IsValid )
             {
                 // checks if is unique
-                if(_context.FeatureTypes.Count(v => v.Sigla.Equals(featureType.Sigla)) != 0)
+                if(_context.FeatureTypes.Count(v => v.Initials.Equals(featureType.Initials)) != 0)
                     return View(featureType);
 
                 _context.Add(featureType);
@@ -94,7 +94,7 @@ namespace RoomFinder4You
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Sigla,IsMandatory")] FeatureType featureType)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Initials,IsMandatory")] FeatureType featureType)
         {
             if (id != featureType.Id)
             {
@@ -104,7 +104,7 @@ namespace RoomFinder4You
             if (ModelState.IsValid)
             {
                 // checks if is unique
-                if(_context.FeatureTypes.Count(v => v.Sigla.Equals(featureType.Sigla)) != 0)
+                if(_context.FeatureTypes.Count(v => v.Initials.Equals(featureType.Initials)) != 0)
                     return View(featureType);
                     
                 try

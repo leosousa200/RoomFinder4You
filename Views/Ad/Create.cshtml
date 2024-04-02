@@ -1,4 +1,5 @@
 @model RoomFinder4You.Models.Ad
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = "Criar Anúncio";
@@ -12,7 +13,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
@@ -33,12 +34,16 @@
                 <label asp-for="adStatus" class="control-label"></label>
                 <select asp-for="AdStatusId" class ="form-control" asp-items="ViewBag.AdStatusId"></select>
             </div>
+              <div class="form-group">
+                <label class="control-label">Imagem Principal</label>
+                <input type="file" name="imagem" id="imagem" class="form-control-file">
+            </div>
             <hr />
             <h3> Características do quarto</h3>
-            @foreach(var item in featureTypesList){
+             @foreach(var item in featureTypesList){
                 <div class="form-group">
-                <label class="control-label">@item.Text<span class="text-danger">*</span></label>
-                <input name="@item.Value" class="form-control" required/>
+               <label class="control-label">@item.Text<span class="text-danger">*</span></label>
+                <input type="text" name="@item.Value" class="form-control" />
                 </div>
             }
             <p class="text-danger">Características marcadas com '*' são obrigatórias!</p>
@@ -48,10 +53,11 @@
             @foreach(var item in featureTypesListNon){
                 <div class="form-group">
                 <label class="control-label">@item.Text</label>
-                <input name="@item.Value" class="form-control"/>
+                <input type="text" id="@item.Value"name="@item.Value" class="form-control"/>
                 </div>
             }
 
+            <hr />
             <div class="form-group">
                 <input type="submit" value="Criar" class="btn btn-primary mt-1" />
             </div>

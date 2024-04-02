@@ -8,7 +8,7 @@ public class FeatureType{
     public String Name{get;set;}
     [Display(Name = "Sigla")]
     [StringLength(3,MinimumLength = 3)]
-    public String Sigla{get;set;}
+    public String Initials{get;set;}
     [Display(Name = "Mandatório")]
     public bool IsMandatory{get;set;}
 

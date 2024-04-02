@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Details";
+    var featuresMandatory = Model.room.Features.Where(a => a.featureType.IsMandatory).AsEnumerable<Feature>();
+    var features = Model.room.Features.Where(a => !a.featureType.IsMandatory).AsEnumerable<Feature>();
+
 }
 
 <h1>Details</h1>
@@ -9,6 +12,9 @@
 <div>
     <h4>Ad</h4>
     <hr />
+    <div class="form-group">
+        <img src="data:@Model.PhotoFormat,@Model.MainPhoto">
+    </div>
     <dl class="row">
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
@@ -23,24 +29,50 @@
             @Html.DisplayFor(model => model.Description)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.room)
+            @Html.DisplayNameFor(model => model.room.Price)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.room.Id)
+            @Html.DisplayFor(model => model.room.Price) €
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.adStatus)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.adStatus.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.User)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Id)
+            @Html.DisplayFor(model => model.adStatus.Status)
         </dd>
     </dl>
+
+    <h4>Características do quarto</h4>
+    <hr />
+
+        <dl class="row">
+        @foreach(var feat in featuresMandatory){
+       <dt class = "col-sm-2">
+            @feat.featureType.Name
+        </dt>
+        <dd class = "col-sm-10">
+            @feat.Value
+        </dd>
+        }
+
+    </dl>
+
+    @if(features.Count() != 0){
+    <h4>Características adicionais</h4>
+    <hr />
+
+     <dl class="row">
+        @foreach(var feat in features){
+       <dt class = "col-sm-2">
+            @feat.featureType.Name
+        </dt>
+        <dd class = "col-sm-10">
+            @feat.Value
+        </dd>
+        }
+
+    </dl>
+    }
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |

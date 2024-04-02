@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoomFinder4You.Data;
 
@@ -10,9 +11,11 @@ using RoomFinder4You.Data;
 namespace RoomFinder4You.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240402161915_AdCorretedV3")]
+    partial class AdCorretedV3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.15");
@@ -172,6 +175,15 @@ namespace RoomFinder4You.Data.Migrations
                     b.Property<string>("UserID")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("MainPhoto")
+                        .HasColumnType("varbinary(max)")
+                        .HasColumnName("MainPhoto");
+
+                    b.Property<string>("PhotoFormat")       
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("PhotoFormat");
+
 
                     b.HasKey("Id");
 
