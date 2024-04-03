@@ -15,8 +15,9 @@ public class Ad{
     public AdStatus adStatus{get;set;}
     public int AdStatusId{get;set;}
     [Display(Name = "Imagem Principal")]
-    public Byte[]? MainPhoto;
-    public String? PhotoFormat;
+    public Byte[]? MainPhoto{get;set;}
+    public String? PhotoFormat{get;set;}
     public String UserID {get;set;}
+    public int ViewNumber{get;set;} = 0;
     public ApplicationUser User{get;set;}
 }

@@ -13,7 +13,7 @@
     <h4>Ad</h4>
     <hr />
     <div class="form-group">
-        <img src="data:@Model.PhotoFormat,@Model.MainPhoto">
+        <img src="data:@Model.PhotoFormat;base64,@Convert.ToBase64String(Model.MainPhoto)" style="max-width: 400px;max-height: 300px;">
     </div>
     <dl class="row">
         <dt class = "col-sm-2">

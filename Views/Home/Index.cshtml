@@ -1,8 +1,11 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<RoomFinder4You.Models.Ad>
+
+@{
+  ViewData["Title"] = "Home Page";
 }
+
 <head>
-    <link rel="stylesheet" type="text/css" href="/css/home.css" />
+  <link rel="stylesheet" type="text/css" href="/css/home.css" />
 </head>
 
 <main>
@@ -13,4 +16,36 @@
       <a class="btn btn-outline-secondary" href="#">AQUI</a>
     </div>
   </div>
+
+
+<div class="p-3">
+  @if (Model.Count() != 0)
+  {
+    <hr />
+    <h3> Quartos mais vistos!</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      @foreach (var ad in Model)
+      {
+        <div class="col">
+          <div class="card h-100">
+            <img src="data:@ad.PhotoFormat;base64,@Convert.ToBase64String(ad.MainPhoto)"
+              style="max-width: 375px;max-height: 275px; min-width: 375px;min-height: 275px;" class="card-img-top rounded mx-auto d-block pt-2">
+            <div class="card-body">
+              <h5 class="card-title">
+                 <a asp-action="Details" asp-controller="Ad" asp-route-id="@ad.Id"> @ad.Title</a>
+               </h5>
+              <p class="card-text">@ad.Description</p>
+            </div>
+            <div class="card-footer">
+              <small class="text-muted">Numero de visualizações: @ad.ViewNumber</small>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+
+
 </main>

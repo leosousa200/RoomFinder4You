@@ -53,8 +53,12 @@ namespace RoomFinder4You
             {
                 return NotFound();
             }
-            Console.WriteLine("Formato: " + ad.PhotoFormat);
-            Console.WriteLine("Info: " + ad.MainPhoto);
+
+                ad.ViewNumber++;
+
+                _context.Update(ad);
+                Console.WriteLine(ad.ViewNumber);
+                await _context.SaveChangesAsync();
 
 
             return View(ad);
