@@ -1,5 +1,5 @@
 # RoomFinder4You
-### Simulação de website para encontrar quartos disponíveis.
+### Simulação de website para encontrar quartos disponíveis
 
 
 #### Tecnologias utilizadas

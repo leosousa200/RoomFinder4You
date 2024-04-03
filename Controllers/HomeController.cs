@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RoomFinder4You.Data;
 using RoomFinder4You.Models;
+using RoomFinder4You.ViewModels;
 
 namespace RoomFinder4You.Controllers;
 
@@ -24,8 +25,22 @@ public class HomeController : Controller
                 .Include(a => a.adStatus)
                 .Include(a => a.room)
                 .OrderByDescending(a => a.ViewNumber)
-                .Take(3);
-            return View(await applicationDbContext.ToListAsync());
+                .Take(3).ToList();
+
+            ICollection<AdCardViewModel> viewModel = new List<AdCardViewModel>();
+
+            foreach(var ad in applicationDbContext){
+                AdCardViewModel tempModel = new AdCardViewModel{
+                    Id = ad.Id,
+                    Title = ad.Title,
+                    Description = ad.Description,
+                    MainPhoto = ad.MainPhoto,
+                    PhotoFormat = ad.PhotoFormat,
+                    ViewNumber = ad.ViewNumber
+                };
+                viewModel.Add(tempModel);
+            }
+            return View(viewModel);
     }
 
     public IActionResult Privacy()
