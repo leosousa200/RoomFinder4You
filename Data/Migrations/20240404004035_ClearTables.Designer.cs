@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RoomFinder4You.Data;
 
@@ -10,9 +11,11 @@ using RoomFinder4You.Data;
 namespace RoomFinder4You.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240404004035_ClearTables")]
+    partial class ClearTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.15");
@@ -353,15 +356,10 @@ namespace RoomFinder4You.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("LocationId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<float>("Price")
                         .HasColumnType("REAL");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LocationId");
 
                     b.ToTable("Rooms");
                 });
@@ -457,17 +455,6 @@ namespace RoomFinder4You.Data.Migrations
                         .HasForeignKey("RoomId");
 
                     b.Navigation("featureType");
-                });
-
-            modelBuilder.Entity("RoomFinder4You.Models.Room", b =>
-                {
-                    b.HasOne("RoomFinder4You.Models.Location", "location")
-                        .WithMany()
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("location");
                 });
 
             modelBuilder.Entity("RoomFinder4You.Models.ApplicationUser", b =>

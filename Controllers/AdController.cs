@@ -279,6 +279,9 @@ namespace RoomFinder4You
             var ad = await _context.Ads.FindAsync(id);
             if (ad != null)
             {
+                if(ad.room.Features != null)
+                    _context.Features.RemoveRange(ad.room.Features);
+                _context.Rooms.Remove(ad.room);
                 _context.Ads.Remove(ad);
             }
             

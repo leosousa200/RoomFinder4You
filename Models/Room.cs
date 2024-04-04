@@ -8,4 +8,9 @@ public class Room{
     public float Price{get;set;}
     [Display(Name = "Características")]
     public ICollection<Feature> Features{get;set;}
+    
+    [Display(Name = "Localização")]
+    public Location location { get; set; }
+    public int LocationId { get; set; }
+    
 }
