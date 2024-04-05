@@ -13,6 +13,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Feature> Features {get;set;}
     public DbSet<FeatureType> FeatureTypes {get;set;}
     public DbSet<AdStatus> AdsStatus {get;set;}
+    public DbSet<Country> Countries {get;set;}
+    public DbSet<City> Cities {get;set;}
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {

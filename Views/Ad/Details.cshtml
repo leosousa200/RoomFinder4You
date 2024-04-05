@@ -29,6 +29,18 @@
             @Html.DisplayFor(model => model.Description)
         </dd>
         <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.room.location.city.Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.room.location.city.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.room.location.Place)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.room.location.Place)
+        </dd>
+        <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.room.Price)
         </dt>
         <dd class = "col-sm-10">

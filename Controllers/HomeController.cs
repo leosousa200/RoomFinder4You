@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RoomFinder4You.Data;
@@ -7,6 +8,7 @@ using RoomFinder4You.ViewModels;
 
 namespace RoomFinder4You.Controllers;
 
+[Authorize(Roles ="Admin")]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -24,6 +26,8 @@ public class HomeController : Controller
             var applicationDbContext = _context.Ads.Include(a => a.User)
                 .Include(a => a.adStatus)
                 .Include(a => a.room)
+                .Include(a => a.room.location)
+                .ThenInclude(a => a.city)
                 .OrderByDescending(a => a.ViewNumber)
                 .Take(3).ToList();
 
@@ -36,7 +40,8 @@ public class HomeController : Controller
                     Description = ad.Description,
                     MainPhoto = ad.MainPhoto,
                     PhotoFormat = ad.PhotoFormat,
-                    ViewNumber = ad.ViewNumber
+                    City = ad.room.location.city.Name,
+                    Place = ad.room.location.Place
                 };
                 viewModel.Add(tempModel);
             }

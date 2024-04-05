@@ -12,105 +12,109 @@ using RoomFinder4You.Models;
 namespace RoomFinder4You
 {
     [Authorize(Roles ="Admin")]
-    public class RoomController : Controller
+    public class CountryController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public RoomController(ApplicationDbContext context)
+        public CountryController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Room
+        // GET: Country
         public async Task<IActionResult> Index()
         {
-            //var applicationDbContext = _context.Rooms.Include(r => r.location);
-            var applicationDbContext = _context.Rooms;
-            return View(await applicationDbContext.ToListAsync());
+              return _context.Countries != null ? 
+                          View(await _context.Countries.ToListAsync()) :
+                          Problem("Entity set 'ApplicationDbContext.Countries'  is null.");
         }
 
-        // GET: Room/Details/5
+        // GET: Country/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Rooms == null)
+            if (id == null || _context.Countries == null)
             {
                 return NotFound();
             }
 
-            var room = await _context.Rooms
-                //.Include(r => r.location)
+            var country = await _context.Countries
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (room == null)
+            if (country == null)
             {
                 return NotFound();
             }
 
-            return View(room);
+            return View(country);
         }
 
-        // GET: Room/Create
+        // GET: Country/Create
         public IActionResult Create()
         {
-            ViewData["LocationId"] = new SelectList(_context.Locations, "Id", "Id");
             return View();
         }
 
-        // POST: Room/Create
+        // POST: Country/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Price,LocationId")] Room room)
+        public async Task<IActionResult> Create([Bind("Id,Name")] Country country)
         {
+            ModelState.Remove(nameof(country.Cities));  
+            ModelState.Remove(nameof(country.NumberOfAds));
+
             if (ModelState.IsValid)
             {
-                _context.Add(room);
+                country.NumberOfAds = 0;
+                country.Cities = new List<City>();
+                _context.Add(country);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            //ViewData["LocationId"] = new SelectList(_context.Locations, "Id", "Id", room.LocationId);
-            return View(room);
+            return View(country);
         }
 
-        // GET: Room/Edit/5
+        // GET: Country/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Rooms == null)
+            if (id == null || _context.Countries == null)
             {
                 return NotFound();
             }
 
-            var room = await _context.Rooms.FindAsync(id);
-            if (room == null)
+            var country = await _context.Countries.FindAsync(id);
+            if (country == null)
             {
                 return NotFound();
             }
-            //ViewData["LocationId"] = new SelectList(_context.Locations, "Id", "Id", room.LocationId);
-            return View(room);
+            return View(country);
         }
 
-        // POST: Room/Edit/5
+        // POST: Country/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Price,LocationId")] Room room)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Country country)
         {
-            if (id != room.Id)
+            if (id != country.Id)
             {
                 return NotFound();
             }
+            ModelState.Remove(nameof(country.Cities));  
+            ModelState.Remove(nameof(country.NumberOfAds));
+
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(room);
+                    _context.Update(country);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RoomExists(room.Id))
+                    if (!CountryExists(country.Id))
                     {
                         return NotFound();
                     }
@@ -121,53 +125,53 @@ namespace RoomFinder4You
                 }
                 return RedirectToAction(nameof(Index));
             }
-            //ViewData["LocationId"] = new SelectList(_context.Locations, "Id", "Id", room.LocationId);
-            return View(room);
+            return View(country);
         }
 
-        // GET: Room/Delete/5
+        // GET: Country/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Rooms == null)
+            if (id == null || _context.Countries == null)
             {
                 return NotFound();
             }
 
-            var room = await _context.Rooms
-                //.Include(r => r.location)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (room == null)
+            var country =  _context.Countries.Include(co => co.Cities)
+                .First(m => m.Id == id);
+            if (country == null)
             {
                 return NotFound();
             }
 
-            return View(room);
+            if(country.Cities != null)
+                _context.Cities.RemoveRange(country.Cities);
+
+
+            return View(country);
         }
 
-        // POST: Room/Delete/5
+        // POST: Country/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Rooms == null)
+            if (_context.Countries == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.Rooms'  is null.");
+                return Problem("Entity set 'ApplicationDbContext.Countries'  is null.");
             }
-            var room = await _context.Rooms.FindAsync(id);
-            if (room != null)
+            var country = await _context.Countries.FindAsync(id);
+            if (country != null)
             {
-                if(room.Features != null)
-                    _context.Features.RemoveRange(room.Features);
-                _context.Rooms.Remove(room);
+                _context.Countries.Remove(country);
             }
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool RoomExists(int id)
+        private bool CountryExists(int id)
         {
-          return (_context.Rooms?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Countries?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

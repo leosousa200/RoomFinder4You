@@ -11,6 +11,7 @@ namespace RoomFinder4You.ViewModels
     public String Description{get;set;} 
     public Byte[]? MainPhoto{get;set;}
     public String? PhotoFormat{get;set;}
-    public int ViewNumber{get;set;}
+    public String City{get;set;}
+    public String Place{get;set;}
     }
 }

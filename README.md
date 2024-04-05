@@ -1,5 +1,5 @@
 # RoomFinder4You
-### Simulação de website para encontrar quartos disponíveis
+### Website para encontrar quartos disponíveis
 
 
 #### Tecnologias utilizadas
@@ -12,3 +12,5 @@
 
 #### Como compilar
 ...
+
+#### Ter em consideração

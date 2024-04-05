@@ -48,6 +48,7 @@ namespace RoomFinder4You
                 .Include(a => a.room)
                 .ThenInclude(a => a.Features)
                 .ThenInclude(a => a.featureType)
+                .Include(a => a.room.location)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ad == null)
             {
@@ -70,6 +71,7 @@ namespace RoomFinder4You
             ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Status");
             ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Initials", "Name");
             ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Initials", "Name");
+            ViewData["CityId"] = new SelectList(_context.Cities, "Id", "Name");
 
             return View();
         }
@@ -79,7 +81,9 @@ namespace RoomFinder4You
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Title,Description,AdStatusId,room.Price")] Ad ad, float price,[Bind("CBP,AQU,TAM,MOB,ELE,AGU,GAS")] FeaturesInitialsViewModel featuresInitials, IFormFile imagem)
+        public async Task<IActionResult> Create([Bind("Id,Title,Description,AdStatusId,room.Price")] Ad ad, float price,
+            [Bind("CBP,AQU,TAM,MOB,ELE,AGU,GAS")] FeaturesInitialsViewModel featuresInitials, IFormFile imagem,
+            int cityId,string place)
         {
                 Console.WriteLine("ENTREI NO CREATE!");
                 ModelState.Remove(nameof(ad.room));
@@ -101,9 +105,14 @@ namespace RoomFinder4You
                 Room room = new Room();
                 room.Features = new List<Feature>();
                 room.Price = price;
+                // Location logic
+                Location loc = new Location{
+                    city = await _context.Cities.FindAsync(cityId),
+                    Place = place
+                };
+                room.location = loc;
                 ad.room = room;
 
-        
                 Console.WriteLine("BLOCK");
 
                 //Features logic
@@ -176,7 +185,14 @@ namespace RoomFinder4You
 
                 // end
                 _context.Add(ad);
-                Console.WriteLine("Ad final: " + ad.PhotoFormat);
+
+                //increase ad number size to city and country:
+                City tempCity = await _context.Cities.Include(city => city.country).FirstOrDefaultAsync(city => city.Id == cityId);
+                tempCity.NumberOfAds++;
+                Country tempCountry = tempCity.country;
+                tempCountry.NumberOfAds++;
+                _context.Cities.Update(tempCity);
+                _context.Countries.Update(tempCountry);
 
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -185,6 +201,7 @@ namespace RoomFinder4You
             ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Status");
             ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Initials", "Name");
             ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Initials", "Name");
+            ViewData["CityId"] = new SelectList(_context.Cities, "Id", "Name");
 
             return View(ad);
         }
@@ -259,6 +276,8 @@ namespace RoomFinder4You
                 .Include(a => a.adStatus)
                 .Include(a => a.room)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
+            
             if (ad == null)
             {
                 return NotFound();
@@ -276,11 +295,25 @@ namespace RoomFinder4You
             {
                 return Problem("Entity set 'ApplicationDbContext.Ads'  is null.");
             }
-            var ad = await _context.Ads.FindAsync(id);
+            var ad = _context.Ads.Include(ad => ad.room)
+                .ThenInclude(room => room.Features)
+                .Include(ad => ad.room)
+                .ThenInclude(a => a.location)
+                .ThenInclude(a => a.city)
+                .ThenInclude(a => a.country).First(ad => ad.Id == id);
             if (ad != null)
             {
+
+                //increase ad number size to city and country:
+                City tempCity = ad.room.location.city;
+                tempCity.NumberOfAds--;
+                Country tempCountry = tempCity.country;
+                tempCountry.NumberOfAds--;
+                _context.Cities.Update(tempCity);
+                _context.Countries.Update(tempCountry);
                 if(ad.room.Features != null)
                     _context.Features.RemoveRange(ad.room.Features);
+
                 _context.Rooms.Remove(ad.room);
                 _context.Ads.Remove(ad);
             }
