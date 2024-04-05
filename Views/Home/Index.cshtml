@@ -1,4 +1,4 @@
-﻿@model IEnumerable<RoomFinder4You.ViewModels.AdCardViewModel>
+﻿@model RoomFinder4You.ViewModels.HomePageViewModel
 
 @{
   ViewData["Title"] = "Home Page";
@@ -19,12 +19,40 @@
 
 
 <div class="p-3">
-  @if (Model.Count() != 0)
+  @if (Model.MorePopular.Count() != 0)
   {
     <hr />
     <h3> Quartos <span class="text-warning">mais vistos!</span></h3>
     <div class="row row-cols-1 row-cols-md-3 g-4">
-      @foreach (var ad in Model)
+      @foreach (var ad in Model.MorePopular)
+      {
+        <div class="col">
+          <div class="card h-100">
+            <img src="data:@ad.PhotoFormat;base64,@Convert.ToBase64String(ad.MainPhoto)"
+              style="max-width: 375px;max-height: 275px; min-width: 375px;min-height: 275px;" class="card-img-top rounded mx-auto d-block pt-2">
+            <div class="card-body">
+              <h5 class="card-title">
+                 <a asp-action="Details" asp-controller="Ad" asp-route-id="@ad.Id"> @ad.Title</a>
+               </h5>
+              <p class="card-text">@ad.Description</p>
+            </div>
+            <div class="card-footer">
+              <small class="text-muted">@ad.City, @ad.Place</small>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<div class="p-3">
+  @if (Model.CityOne.Count() != 0)
+  {
+    <hr />
+    <h3> Quartos em <span class="text-warning">@Model.cityOneName!</span></h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      @foreach (var ad in Model.CityOne)
       {
         <div class="col">
           <div class="card h-100">
@@ -47,5 +75,32 @@
 </div>
 
 
+<div class="p-3">
+  @if (Model.CityTwo.Count() != 0)
+  {
+    <hr />
+    <h3> Quartos em <span class="text-warning">@Model.cityTwoName!</span></h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      @foreach (var ad in Model.CityTwo)
+      {
+        <div class="col">
+          <div class="card h-100">
+            <img src="data:@ad.PhotoFormat;base64,@Convert.ToBase64String(ad.MainPhoto)"
+              style="max-width: 375px;max-height: 275px; min-width: 375px;min-height: 275px;" class="card-img-top rounded mx-auto d-block pt-2">
+            <div class="card-body">
+              <h5 class="card-title">
+                 <a asp-action="Details" asp-controller="Ad" asp-route-id="@ad.Id"> @ad.Title</a>
+               </h5>
+              <p class="card-text">@ad.Description</p>
+            </div>
+            <div class="card-footer">
+              <small class="text-muted">@ad.City, @ad.Place</small>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
 
 </main>

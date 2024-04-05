@@ -8,7 +8,6 @@ using RoomFinder4You.ViewModels;
 
 namespace RoomFinder4You.Controllers;
 
-[Authorize(Roles ="Admin")]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -27,13 +26,40 @@ public class HomeController : Controller
                 .Include(a => a.adStatus)
                 .Include(a => a.room)
                 .Include(a => a.room.location)
-                .ThenInclude(a => a.city)
+                .ThenInclude(a => a.city);
+
+            var morePopulardata = applicationDbContext
                 .OrderByDescending(a => a.ViewNumber)
                 .Take(3).ToList();
+            
+            var cityOneData = applicationDbContext
+                .Where(a => a.room.location.city.NumberOfAds >= 3)
+                .ToList();
+            cityOneData = cityOneData
+                .OrderBy(r => Guid.NewGuid())
+                .Take(3).ToList();
+            
+            string cityOneName = "";
+            if(cityOneData.Count > 0)
+                cityOneName =  cityOneData.First().room.location.city.Name;
 
-            ICollection<AdCardViewModel> viewModel = new List<AdCardViewModel>();
+            var cityTwoData = applicationDbContext
+                .Where(a => a.room.location.city.NumberOfAds >= 3 && !a.room.location.city.Name.Equals(cityOneName))
+                .ToList();     
 
-            foreach(var ad in applicationDbContext){
+            cityTwoData = cityTwoData.OrderBy(r => Guid.NewGuid())
+                .Take(3).ToList();
+                
+            string cityTwoName = "";
+            if(cityTwoData.Count > 0)
+                cityTwoName =  cityTwoData.First().room.location.city.Name;
+
+
+            ICollection<AdCardViewModel> morePopular = new List<AdCardViewModel>();
+            ICollection<AdCardViewModel> cityOne = new List<AdCardViewModel>();
+            ICollection<AdCardViewModel> cityTwo = new List<AdCardViewModel>();
+
+            foreach(var ad in morePopulardata){
                 AdCardViewModel tempModel = new AdCardViewModel{
                     Id = ad.Id,
                     Title = ad.Title,
@@ -43,9 +69,45 @@ public class HomeController : Controller
                     City = ad.room.location.city.Name,
                     Place = ad.room.location.Place
                 };
-                viewModel.Add(tempModel);
+                morePopular.Add(tempModel);
             }
-            return View(viewModel);
+
+            foreach(var ad in cityOneData){
+                AdCardViewModel tempModel = new AdCardViewModel{
+                    Id = ad.Id,
+                    Title = ad.Title,
+                    Description = ad.Description,
+                    MainPhoto = ad.MainPhoto,
+                    PhotoFormat = ad.PhotoFormat,
+                    City = ad.room.location.city.Name,
+                    Place = ad.room.location.Place
+                };
+                cityOne.Add(tempModel);
+            }
+
+                foreach(var ad in cityTwoData){
+                AdCardViewModel tempModel = new AdCardViewModel{
+                    Id = ad.Id,
+                    Title = ad.Title,
+                    Description = ad.Description,
+                    MainPhoto = ad.MainPhoto,
+                    PhotoFormat = ad.PhotoFormat,
+                    City = ad.room.location.city.Name,
+                    Place = ad.room.location.Place
+                };
+                cityTwo.Add(tempModel);
+            }
+
+
+            HomePageViewModel homePageViewModel = new HomePageViewModel{
+                    MorePopular = morePopular,
+                    CityOne = cityOne,
+                    cityOneName = cityOneName,
+                    CityTwo = cityTwo,
+                    cityTwoName = cityTwoName
+            };
+
+            return View(homePageViewModel);
     }
 
     public IActionResult Privacy()
