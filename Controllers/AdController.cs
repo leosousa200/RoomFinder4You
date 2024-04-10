@@ -10,6 +10,9 @@ using RoomFinder4You.ViewModels;
 
 namespace RoomFinder4You
 {
+    /// <summary>
+    /// Ad Controller.
+    /// </summary>
     public class AdController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -24,21 +27,30 @@ namespace RoomFinder4You
             _hostingEnvironment = hostingEnvironment;
         }
 
-        // GET: Ad
+        /// <summary>
+        /// [GET]
+        /// Ad management page.
+        /// </summary>
+        /// <returns>View with list of ads.</returns>
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Ads.Include(a => a.User).Include(a => a.adStatus).Include(a => a.room);
-            return View(await applicationDbContext.ToListAsync());
+            var ads = _context.Ads.
+                Include(a => a.User)
+                .Include(a => a.adStatus)
+                .Include(a => a.room);
+            return View(await ads.ToListAsync());
         }
 
-        // GET: Ad/Details/5
+        /// <summary>
+        /// [GET]
+        /// Ad details.
+        /// </summary>
+        /// <param name="id">Id of the ad.</param>
+        /// <returns>View with the add, if possible.</returns>
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Ads == null)
-            {
-                return NotFound();
-            }
+            if (id == null || _context.Ads == null) { return NotFound(); }
 
             var ad = await _context.Ads
                 .Include(a => a.User)
@@ -48,38 +60,34 @@ namespace RoomFinder4You
                 .ThenInclude(a => a.featureType)
                 .Include(a => a.room.location)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (ad == null)
-            {
-                return NotFound();
-            }
 
+            if (ad == null) { return NotFound(); }
+
+            // Increase the view number of the ad
             ad.ViewNumber++;
 
-            //gallery images
-            string uploadsFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder());
-            uploadsFolder = Path.Combine(uploadsFolder, UploadHelper.GetAdsFolder());
-            uploadsFolder = Path.Combine(uploadsFolder, ("Ad_" + ad.Id));
+            // Prepare gallery images to be shown
+            string galleryFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder(),
+             UploadHelper.GetAdsFolder(), "Ad_" + ad.Id);
 
-            if (Directory.Exists(uploadsFolder))
+            if (Directory.Exists(galleryFolder))
             {
-                List<String> images = new List<string>(Directory.GetFiles(uploadsFolder, ""));
+                List<String> images = new List<string>(Directory.GetFiles(galleryFolder, ""));
                 List<byte[]> imageData = ReadImageFilesFromDisk(images);
-
                 ViewData["galleryImages"] = imageData;
             }
-
-            // if upload folder dont exist creates it 
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
 
             _context.Update(ad);
             await _context.SaveChangesAsync();
 
-
             return View(ad);
         }
 
-        // GET: Ad/Create
+        /// <summary>
+        /// [GET]
+        /// Ad create page.
+        /// </summary>
+        /// <returns>View with all the viewdata needed.</returns>
         public IActionResult Create()
         {
             ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Status");
@@ -90,9 +98,18 @@ namespace RoomFinder4You
             return View();
         }
 
-        // POST: Ad/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// [POST]
+        /// Ad creation.
+        /// </summary>
+        /// <param name="ad">Data of the ad.</param>
+        /// <param name="price">Price of the room.</param>
+        /// <param name="featuresInitials">Initial features of the room.</param>
+        /// <param name="imagem">Main image of the room.</param>
+        /// <param name="gallery">Collection of images of the room.</param>
+        /// <param name="cityId">Id of the city.</param>
+        /// <param name="place">Name of the place.</param>
+        /// <returns>Redirect to index.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,AdStatusId,room.Price")] Ad ad, float price,
@@ -215,7 +232,12 @@ namespace RoomFinder4You
             return View(ad);
         }
 
-        // GET: Ad/Edit/5
+        /// <summary>
+        /// [GET]
+        /// Ad edit page.
+        /// </summary>
+        /// <param name="id">Id of the ad.</param>
+        /// <returns>View with all the viewdata needed.</returns>
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Ads == null)
@@ -234,9 +256,13 @@ namespace RoomFinder4You
             return View(ad);
         }
 
-        // POST: Ad/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        /// <summary>
+        /// [Post]
+        /// Edit an ad.
+        /// </summary>
+        /// <param name="id">Id of the ad.</param>
+        /// <param name="ad">Data of the ad.</param>
+        /// <returns>Redirect to index.</returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,RoomId,AdStatusId,UserID")] Ad ad)
@@ -272,7 +298,12 @@ namespace RoomFinder4You
             return View(ad);
         }
 
-        // GET: Ad/Delete/5
+        /// <summary>
+        /// [GET]
+        /// Ad delete page.
+        /// </summary>
+        /// <param name="id">Id of the ad.</param>
+        /// <returns>View of deletion with the data of the ad.</returns>
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Ads == null)
@@ -295,7 +326,12 @@ namespace RoomFinder4You
             return View(ad);
         }
 
-        // POST: Ad/Delete/5
+        /// <summary>
+        /// [POST]
+        /// Delete an ad.
+        /// </summary>
+        /// <param name="id">Id of the ad.</param>
+        /// <returns>Redirect to index.</returns>
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -331,11 +367,23 @@ namespace RoomFinder4You
             return RedirectToAction(nameof(Index));
         }
 
+        /// <summary>
+        /// Informs if the ad exists.
+        /// </summary>
+        /// <param name="id">Id of the ad to search.</param>
+        /// <returns>True if exists.</returns>
         private bool AdExists(int id)
         {
             return (_context.Ads?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
+        /// <summary>
+        /// Upload images to the folder of 
+        /// images of the ad.
+        /// </summary>
+        /// <param name="ad">Ad data.</param>
+        /// <param name="formFiles">Collection of files.</param>
+        /// <returns>True if all went well.</returns>
         private bool UploadImages(Ad ad, IFormFileCollection formFiles)
         {
             if (formFiles == null)
@@ -369,8 +417,15 @@ namespace RoomFinder4You
             return true;
         }
 
-        // IA function generated
-        public List<byte[]> ReadImageFilesFromDisk(List<string> filePaths)
+        /// <summary>
+        /// [IA function generated] 
+        /// Read the images in the indicated paths
+        /// and transforms it to bytes, so we dont need
+        /// to indicate the URL in the view.
+        /// </summary>
+        /// <param name="filePaths">List of all paths</param>
+        /// <returns>List of the bytes of the images.</returns>
+        private List<byte[]> ReadImageFilesFromDisk(List<string> filePaths)
         {
             var imageDatas = new List<byte[]>();
 
