@@ -116,6 +116,7 @@ namespace RoomFinder4You
             [Bind("CBP,AQU,TAM,MOB,ELE,AGU,GAS")] FeaturesInitialsViewModel featuresInitials, IFormFile imagem,
             IFormFileCollection gallery, int cityId, string place)
         {
+            // Remove data not created yet
             ModelState.Remove(nameof(ad.room));
             ModelState.Remove(nameof(ad.User));
             ModelState.Remove(nameof(ad.UserID));
@@ -124,11 +125,11 @@ namespace RoomFinder4You
             if (ModelState.IsValid)
             {
 
-                // Room logic
+                // Room object creation
                 Room room = new Room();
-                room.Features = new List<Feature>();
                 room.Price = price;
-                // Location logic
+
+                // Location bind to the room
                 Location loc = new Location
                 {
                     city = await _context.Cities.FindAsync(cityId),
@@ -137,56 +138,12 @@ namespace RoomFinder4You
                 room.location = loc;
                 ad.room = room;
 
-
                 //Features logic
-                if (String.IsNullOrEmpty(featuresInitials.CBP) || String.IsNullOrEmpty(featuresInitials.AQU) || String.IsNullOrEmpty(featuresInitials.TAM) || String.IsNullOrEmpty(featuresInitials.MOB))
+                List<Feature>? features = FeaturesProcess(featuresInitials);
+                if (features == null)
                     return View(ad);
 
-
-                Feature featureCBP = new Feature();
-                featureCBP.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("CBP"));
-                featureCBP.Value = featuresInitials.CBP;
-                room.Features.Add(featureCBP);
-
-                Feature featureAQU = new Feature();
-                featureAQU.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AQU"));
-                featureAQU.Value = featuresInitials.AQU;
-                room.Features.Add(featureAQU);
-
-                Feature featureTAM = new Feature();
-                featureTAM.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("TAM"));
-                featureTAM.Value = featuresInitials.TAM;
-                room.Features.Add(featureTAM);
-
-                Feature featureMOB = new Feature();
-                featureMOB.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("MOB"));
-                featureMOB.Value = featuresInitials.MOB;
-                room.Features.Add(featureMOB);
-
-                // non mandatory features ELE,AGU,GAS
-                if (!String.IsNullOrEmpty(featuresInitials.ELE))
-                {
-                    Feature featureELE = new Feature();
-                    featureELE.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("ELE"));
-                    featureELE.Value = featuresInitials.ELE;
-                    room.Features.Add(featureELE);
-                }
-
-                if (!String.IsNullOrEmpty(featuresInitials.AGU))
-                {
-                    Feature featureAGU = new Feature();
-                    featureAGU.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AGU"));
-                    featureAGU.Value = featuresInitials.AGU;
-                    room.Features.Add(featureAGU);
-                }
-
-                if (!String.IsNullOrEmpty(featuresInitials.GAS))
-                {
-                    Feature featureGAS = new Feature();
-                    featureGAS.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("GAS"));
-                    featureGAS.Value = featuresInitials.GAS;
-                    room.Features.Add(featureGAS);
-                }
+                room.Features = features;
 
                 //image handling
 
@@ -375,6 +332,102 @@ namespace RoomFinder4You
         private bool AdExists(int id)
         {
             return (_context.Ads?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        /// <summary>
+        /// Extracts a list of features from
+        /// a model.
+        /// </summary>
+        /// <param name="featuresInitials">Features information.</param>
+        /// <returns>The list of features extracted.</returns>
+        private List<Feature>? FeaturesProcess(FeaturesInitialsViewModel featuresInitials)
+        {
+            if (String.IsNullOrEmpty(featuresInitials.CBP) || String.IsNullOrEmpty(featuresInitials.AQU) || String.IsNullOrEmpty(featuresInitials.TAM) || String.IsNullOrEmpty(featuresInitials.MOB))
+                return null;
+
+            // Get mandatory features
+            List<Feature> features = AppendMandatoryFeatures(featuresInitials);
+
+            // Get non mandatory features
+            features = AppendNonMandatoryFeatures(featuresInitials, features);
+
+            return features;
+        }
+
+
+        /// <summary>
+        /// Extracts a list of mandatory
+        /// features from a model.
+        /// </summary>
+        /// <param name="featuresInitials">Features information.</param>
+        /// <returns>The list of the mandatory features extracted.</returns>
+        private List<Feature> AppendMandatoryFeatures(FeaturesInitialsViewModel featuresInitials)
+        {
+            List<Feature> features = new List<Feature>
+            {
+                new Feature
+                {
+                    featureType = _context.FeatureTypes.First(v => v.Initials.Equals("CBP")),
+                    Value = featuresInitials.CBP
+                },
+                new Feature
+                {
+                    featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AQU")),
+                    Value = featuresInitials.AQU
+                },
+                new Feature
+                {
+                    featureType = _context.FeatureTypes.First(v => v.Initials.Equals("TAM")),
+                    Value = featuresInitials.TAM
+                },
+                new Feature
+                {
+                    featureType = _context.FeatureTypes.First(v => v.Initials.Equals("MOB")),
+                    Value = featuresInitials.MOB
+                }
+            };
+            return features;
+        }
+
+        /// <summary>
+        /// Extracts a list of non mandatory
+        /// features from a model and added it
+        /// to the received list.
+        /// </summary>
+        /// <param name="featuresInitials">Features information.</param>
+        /// <param name="features">List with mandatory features.</param>
+        /// <returns>The list of all features extracted.</returns>
+        private List<Feature> AppendNonMandatoryFeatures(FeaturesInitialsViewModel featuresInitials, List<Feature> features)
+        {
+
+            if (!String.IsNullOrEmpty(featuresInitials.ELE))
+            {
+                features.Add(new Feature
+                {
+                    featureType = _context.FeatureTypes.First(v => v.Initials.Equals("ELE")),
+                    Value = featuresInitials.ELE
+                });
+            }
+
+            if (!String.IsNullOrEmpty(featuresInitials.AGU))
+            {
+                features.Add(new Feature
+                {
+                    featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AGU")),
+                    Value = featuresInitials.AGU
+                });
+            }
+
+            if (!String.IsNullOrEmpty(featuresInitials.GAS))
+            {
+                features.Add(new Feature
+                {
+                    featureType = _context.FeatureTypes.First(v => v.Initials.Equals("GAS")),
+                    Value = featuresInitials.GAS
+                });
+            }
+
+            return features;
         }
 
         /// <summary>
