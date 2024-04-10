@@ -55,9 +55,7 @@ namespace RoomFinder4You
             var ad = await _context.Ads
                 .Include(a => a.User)
                 .Include(a => a.adStatus)
-                .Include(a => a.room)
-                .ThenInclude(a => a.Features)
-                .ThenInclude(a => a.featureType)
+                .Include(a => a.room).ThenInclude(a => a.Features).ThenInclude(a => a.featureType)
                 .Include(a => a.room.location)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
@@ -72,8 +70,7 @@ namespace RoomFinder4You
 
             if (Directory.Exists(galleryFolder))
             {
-                List<String> images = new List<string>(Directory.GetFiles(galleryFolder, ""));
-                List<byte[]> imageData = ReadImageFilesFromDisk(images);
+                List<byte[]> imageData = ReadImageFilesFromDisk(new List<string>(Directory.GetFiles(galleryFolder, "")));
                 ViewData["galleryImages"] = imageData;
             }
 
@@ -117,14 +114,11 @@ namespace RoomFinder4You
             IFormFileCollection gallery, int cityId, string place)
         {
             // Remove data not created yet
-            ModelState.Remove(nameof(ad.room));
-            ModelState.Remove(nameof(ad.User));
-            ModelState.Remove(nameof(ad.UserID));
-            ModelState.Remove(nameof(ad.adStatus));
+            ModelState.Remove(nameof(ad.room)); ModelState.Remove(nameof(ad.User));
+            ModelState.Remove(nameof(ad.UserID)); ModelState.Remove(nameof(ad.adStatus));
 
             if (ModelState.IsValid)
             {
-
                 // Room object creation
                 Room room = new Room();
                 room.Price = price;
@@ -138,46 +132,42 @@ namespace RoomFinder4You
                 room.location = loc;
                 ad.room = room;
 
-                //Features logic
+                // Features extraction
                 List<Feature>? features = FeaturesProcess(featuresInitials);
                 if (features == null)
                     return View(ad);
 
                 room.Features = features;
 
-                //image handling
-
-                if (imagem != null)
+                // Main image logic
+                byte[]? bytes;
+                if ((bytes = ImageToByte(imagem)) != null)
                 {
-
                     ad.PhotoFormat = imagem.ContentType;
-                    var memoryStream = new MemoryStream();
-                    imagem.CopyTo(memoryStream);
-                    ad.MainPhoto = memoryStream.ToArray();
-
+                    ad.MainPhoto = bytes;
                 }
-                else
-                {
-                }
+                else { return View(ad); }
 
-                // link user
+                // Link the user
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                ad.UserID = userId;
+                ad.UserID = userId!;
 
-
-                // end
                 _context.Add(ad);
 
-                //increase ad number size to city and country:
-                City tempCity = await _context.Cities.Include(city => city.country).FirstOrDefaultAsync(city => city.Id == cityId);
-                tempCity.NumberOfAds++;
-                Country tempCountry = tempCity.country;
-                tempCountry.NumberOfAds++;
+                // Increment ad number size in city and country:
+                City? tempCity = await IncreaseCityAdNumber(cityId);
+                if (tempCity == null) return View(ad);
+                Country? tempCountry = await IncreaseCountryAdNumber(tempCity.CountryId);
+                if (tempCountry == null) return View(ad);
                 _context.Cities.Update(tempCity);
                 _context.Countries.Update(tempCountry);
 
+                // Save database changes
                 await _context.SaveChangesAsync();
+
+                // Save gallery'images
                 UploadImages(ad, gallery);
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -352,6 +342,54 @@ namespace RoomFinder4You
             features = AppendNonMandatoryFeatures(featuresInitials, features);
 
             return features;
+        }
+
+        /// <summary>
+        /// Increase the number of the ads related
+        /// to a city.
+        /// </summary>
+        /// <param name="cityId">Id of the city.</param>
+        /// <returns>City obtained, with a increased number of ads.</returns>
+        private async Task<City?> IncreaseCityAdNumber(int cityId)
+        {
+            City? city = await _context.Cities.Include(city => city.country).FirstOrDefaultAsync(city => city.Id == cityId);
+            if (city == null) return null;
+
+            city.NumberOfAds++;
+            return city;
+        }
+
+        /// <summary>
+        /// Increase the number of the ads related
+        /// to a country.
+        /// </summary>
+        /// <param name="countryId">Id of the country.</param>
+        /// <returns>Country obtained, with a increased number of ads.</returns>
+        private async Task<Country?> IncreaseCountryAdNumber(int countryId)
+        {
+            Country? country = await _context.Countries.FirstOrDefaultAsync(country => country.Id == countryId);
+            if (country == null) return null;
+
+            country.NumberOfAds++;
+            return country;
+        }
+
+
+        /// <summary>
+        /// Extracts a list of features from
+        /// a model.
+        /// </summary>
+        /// <param name="featuresInitials">Features information.</param>
+        /// <returns>The list of features extracted.</returns>
+        private Byte[]? ImageToByte(IFormFile image)
+        {
+            if (image == null)
+                return null;
+
+            // Transform image into bytes
+            var memoryStream = new MemoryStream();
+            image.CopyTo(memoryStream);
+            return memoryStream.ToArray();
         }
 
 
