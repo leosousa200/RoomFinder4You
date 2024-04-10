@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using RoomFinder4You.Data;
 using RoomFinder4You.Models;
 using RoomFinder4You.ViewModels;
@@ -19,11 +14,14 @@ namespace RoomFinder4You
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public AdController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public AdController(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
+            IWebHostEnvironment hostingEnvironment)
         {
             _context = context;
             _userManager = userManager;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         // GET: Ad
@@ -55,11 +53,27 @@ namespace RoomFinder4You
                 return NotFound();
             }
 
-                ad.ViewNumber++;
+            ad.ViewNumber++;
 
-                _context.Update(ad);
-                Console.WriteLine(ad.ViewNumber);
-                await _context.SaveChangesAsync();
+            //gallery images
+            string uploadsFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder());
+            uploadsFolder = Path.Combine(uploadsFolder, UploadHelper.GetAdsFolder());
+            uploadsFolder = Path.Combine(uploadsFolder, ("Ad_" + ad.Id));
+
+            if (Directory.Exists(uploadsFolder))
+            {
+                List<String> images = new List<string>(Directory.GetFiles(uploadsFolder, ""));
+                List<byte[]> imageData = ReadImageFilesFromDisk(images);
+
+                ViewData["galleryImages"] = imageData;
+            }
+
+            // if upload folder dont exist creates it 
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            _context.Update(ad);
+            await _context.SaveChangesAsync();
 
 
             return View(ad);
@@ -83,43 +97,34 @@ namespace RoomFinder4You
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,AdStatusId,room.Price")] Ad ad, float price,
             [Bind("CBP,AQU,TAM,MOB,ELE,AGU,GAS")] FeaturesInitialsViewModel featuresInitials, IFormFile imagem,
-            int cityId,string place)
+            IFormFileCollection gallery, int cityId, string place)
         {
-                Console.WriteLine("ENTREI NO CREATE!");
-                ModelState.Remove(nameof(ad.room));
-                ModelState.Remove(nameof(ad.User));
-                ModelState.Remove(nameof(ad.UserID));
-                ModelState.Remove(nameof(ad.adStatus));
+            ModelState.Remove(nameof(ad.room));
+            ModelState.Remove(nameof(ad.User));
+            ModelState.Remove(nameof(ad.UserID));
+            ModelState.Remove(nameof(ad.adStatus));
 
-                if(imagem == null)
-                    Console.WriteLine("É NULO!");
-
-
-               
-                
             if (ModelState.IsValid)
             {
-                Console.WriteLine("ENTREI NO valid!");
 
                 // Room logic
                 Room room = new Room();
                 room.Features = new List<Feature>();
                 room.Price = price;
                 // Location logic
-                Location loc = new Location{
+                Location loc = new Location
+                {
                     city = await _context.Cities.FindAsync(cityId),
                     Place = place
                 };
                 room.location = loc;
                 ad.room = room;
 
-                Console.WriteLine("BLOCK");
 
                 //Features logic
-                if(String.IsNullOrEmpty(featuresInitials.CBP)|| String.IsNullOrEmpty(featuresInitials.AQU) || String.IsNullOrEmpty(featuresInitials.TAM) || String.IsNullOrEmpty(featuresInitials.MOB))
+                if (String.IsNullOrEmpty(featuresInitials.CBP) || String.IsNullOrEmpty(featuresInitials.AQU) || String.IsNullOrEmpty(featuresInitials.TAM) || String.IsNullOrEmpty(featuresInitials.MOB))
                     return View(ad);
 
-                Console.WriteLine("PASSEI BLOCK");
 
                 Feature featureCBP = new Feature();
                 featureCBP.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("CBP"));
@@ -142,40 +147,43 @@ namespace RoomFinder4You
                 room.Features.Add(featureMOB);
 
                 // non mandatory features ELE,AGU,GAS
-                if(!String.IsNullOrEmpty(featuresInitials.ELE)){
-                Feature featureELE = new Feature();
-                featureELE.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("ELE"));
-                featureELE.Value = featuresInitials.ELE;
-                room.Features.Add(featureELE);
+                if (!String.IsNullOrEmpty(featuresInitials.ELE))
+                {
+                    Feature featureELE = new Feature();
+                    featureELE.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("ELE"));
+                    featureELE.Value = featuresInitials.ELE;
+                    room.Features.Add(featureELE);
                 }
 
-                if(!String.IsNullOrEmpty(featuresInitials.AGU)){
-                Feature featureAGU = new Feature();
-                featureAGU.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AGU"));
-                featureAGU.Value = featuresInitials.AGU;
-                room.Features.Add(featureAGU);
+                if (!String.IsNullOrEmpty(featuresInitials.AGU))
+                {
+                    Feature featureAGU = new Feature();
+                    featureAGU.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("AGU"));
+                    featureAGU.Value = featuresInitials.AGU;
+                    room.Features.Add(featureAGU);
                 }
-    
-                if(!String.IsNullOrEmpty(featuresInitials.GAS)){
-                Feature featureGAS = new Feature();
-                featureGAS.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("GAS"));
-                featureGAS.Value = featuresInitials.GAS;
-                room.Features.Add(featureGAS);
+
+                if (!String.IsNullOrEmpty(featuresInitials.GAS))
+                {
+                    Feature featureGAS = new Feature();
+                    featureGAS.featureType = _context.FeatureTypes.First(v => v.Initials.Equals("GAS"));
+                    featureGAS.Value = featuresInitials.GAS;
+                    room.Features.Add(featureGAS);
                 }
 
                 //image handling
-                
-                if(imagem != null){
-                Console.WriteLine("Content Type: " + imagem.ContentType);
 
-                ad.PhotoFormat = imagem.ContentType;
-                var memoryStream = new MemoryStream();
-                imagem.CopyTo(memoryStream);
-                ad.MainPhoto = memoryStream.ToArray();
+                if (imagem != null)
+                {
 
-                Console.WriteLine("Fim de processamento de imagem");
-                }else{
-                    Console.WriteLine("No imagem!");
+                    ad.PhotoFormat = imagem.ContentType;
+                    var memoryStream = new MemoryStream();
+                    imagem.CopyTo(memoryStream);
+                    ad.MainPhoto = memoryStream.ToArray();
+
+                }
+                else
+                {
                 }
 
                 // link user
@@ -195,6 +203,7 @@ namespace RoomFinder4You
                 _context.Countries.Update(tempCountry);
 
                 await _context.SaveChangesAsync();
+                UploadImages(ad, gallery);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -277,7 +286,7 @@ namespace RoomFinder4You
                 .Include(a => a.room)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            
+
             if (ad == null)
             {
                 return NotFound();
@@ -311,20 +320,67 @@ namespace RoomFinder4You
                 tempCountry.NumberOfAds--;
                 _context.Cities.Update(tempCity);
                 _context.Countries.Update(tempCountry);
-                if(ad.room.Features != null)
+                if (ad.room.Features != null)
                     _context.Features.RemoveRange(ad.room.Features);
 
                 _context.Rooms.Remove(ad.room);
                 _context.Ads.Remove(ad);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool AdExists(int id)
         {
-          return (_context.Ads?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Ads?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+        private bool UploadImages(Ad ad, IFormFileCollection formFiles)
+        {
+            if (formFiles == null)
+                return false;
+
+            string uploadsFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder());
+            uploadsFolder = Path.Combine(uploadsFolder, UploadHelper.GetAdsFolder());
+
+            // if upload folder dont exist
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+
+            uploadsFolder = Path.Combine(uploadsFolder, ("Ad_" + ad.Id));
+
+            // if upload folder for the add dont exist
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+            int i = 1;
+            foreach (var file in formFiles)
+            {
+
+                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName) + ".png";
+                string finalFilePath = uploadsFolder + "/img_" + i + UploadHelper.GetUploadFormats();
+                using (var fileStream = new FileStream(finalFilePath, FileMode.Create))
+                {
+                    file.CopyTo(fileStream);
+                }
+                i++;
+            }
+            return true;
+        }
+
+        // IA function generated
+        public List<byte[]> ReadImageFilesFromDisk(List<string> filePaths)
+        {
+            var imageDatas = new List<byte[]>();
+
+            foreach (var filePath in filePaths)
+            {
+                byte[] imageData = System.IO.File.ReadAllBytes(filePath);
+                imageDatas.Add(imageData);
+            }
+
+            return imageDatas;
         }
     }
 }

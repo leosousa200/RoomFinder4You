@@ -27,12 +27,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="room.location.city.Name" class="control-label"></label>
-                <select name="cityId" class ="form-control" asp-items="ViewBag.CityId" required>
+                <select name="cityId" class="form-control" asp-items="ViewBag.CityId" required>
                     <option selected></option>
                 </select>
             </div>
 
-         <div class="form-group">
+            <div class="form-group">
                 <label asp-for="room.location.Place" class="control-label"></label>
                 <input name="place" class="form-control" />
                 <span asp-validation-for="room.location.Place" class="text-danger"></span>
@@ -44,28 +44,35 @@
             </div>
             <div class="form-group">
                 <label asp-for="adStatus" class="control-label"></label>
-                <select asp-for="AdStatusId" class ="form-control" asp-items="ViewBag.AdStatusId"></select>
+                <select asp-for="AdStatusId" class="form-control" asp-items="ViewBag.AdStatusId"></select>
             </div>
-              <div class="form-group">
+            <div class="form-group">
                 <label class="control-label">Imagem Principal</label>
                 <input type="file" name="imagem" accept="image/*" id="imagem" class="form-control-file" required>
             </div>
+            <div class="form-group">
+                <label class="control-label">Galeria de imagens</label>
+                <input type="file" name="gallery" accept="image/*" id="imagem" class="form-control-file" required
+                    multiple>
+            </div>
             <hr />
             <h3> Características do quarto</h3>
-             @foreach(var item in featureTypesList){
+            @foreach (var item in featureTypesList)
+            {
                 <div class="form-group">
-               <label class="control-label">@item.Text<span class="text-danger">*</span></label>
-                <input type="text" name="@item.Value" class="form-control" />
+                    <label class="control-label">@item.Text<span class="text-danger">*</span></label>
+                    <input type="text" name="@item.Value" class="form-control" />
                 </div>
             }
             <p class="text-danger">Características marcadas com '*' são obrigatórias!</p>
             <hr />
 
             <h3> Características adicionais</h3>
-            @foreach(var item in featureTypesListNon){
+            @foreach (var item in featureTypesListNon)
+            {
                 <div class="form-group">
-                <label class="control-label">@item.Text</label>
-                <input type="text" id="@item.Value"name="@item.Value" class="form-control"/>
+                    <label class="control-label">@item.Text</label>
+                    <input type="text" id="@item.Value" name="@item.Value" class="form-control" />
                 </div>
             }
 
@@ -80,4 +87,3 @@
 <div>
     <a asp-action="Index">Voltar à lista</a>
 </div>
-

@@ -4,7 +4,7 @@
     ViewData["Title"] = "Details";
     var featuresMandatory = Model.room.Features.Where(a => a.featureType.IsMandatory).AsEnumerable<Feature>();
     var features = Model.room.Features.Where(a => !a.featureType.IsMandatory).AsEnumerable<Feature>();
-
+    List<byte[]> galleryList = ViewBag.galleryImages;
 }
 
 <h1>Details</h1>
@@ -13,43 +13,44 @@
     <h4>Ad</h4>
     <hr />
     <div class="form-group">
-        <img src="data:@Model.PhotoFormat;base64,@Convert.ToBase64String(Model.MainPhoto)" style="max-width: 400px;max-height: 300px;">
+        <img src="data:@Model.PhotoFormat;base64,@Convert.ToBase64String(Model.MainPhoto)"
+            style="max-width: 400px;max-height: 300px;">
     </div>
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Title)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.room.location.city.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.room.location.city.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.room.location.Place)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.room.location.Place)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.room.Price)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.room.Price) €
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.adStatus)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.adStatus.Status)
         </dd>
     </dl>
@@ -57,34 +58,57 @@
     <h4>Características do quarto</h4>
     <hr />
 
+    <dl class="row">
+        @foreach (var feat in featuresMandatory)
+        {
+            <dt class="col-sm-2">
+                @feat.featureType.Name
+            </dt>
+            <dd class="col-sm-10">
+                @feat.Value
+            </dd>
+        }
+
+    </dl>
+
+    @if (features.Count() != 0)
+    {
+        <h4>Características adicionais</h4>
+        <hr />
+
         <dl class="row">
-        @foreach(var feat in featuresMandatory){
-       <dt class = "col-sm-2">
-            @feat.featureType.Name
-        </dt>
-        <dd class = "col-sm-10">
-            @feat.Value
-        </dd>
-        }
+            @foreach (var feat in features)
+            {
+                <dt class="col-sm-2">
+                    @feat.featureType.Name
+                </dt>
+                <dd class="col-sm-10">
+                    @feat.Value
+                </dd>
+            }
 
-    </dl>
-
-    @if(features.Count() != 0){
-    <h4>Características adicionais</h4>
-    <hr />
-
-     <dl class="row">
-        @foreach(var feat in features){
-       <dt class = "col-sm-2">
-            @feat.featureType.Name
-        </dt>
-        <dd class = "col-sm-10">
-            @feat.Value
-        </dd>
-        }
-
-    </dl>
+        </dl>
     }
+
+
+    @if (galleryList != null)
+    {
+        <h4>Galeria</h4>
+        <hr />
+
+        <dl class="row">
+            @foreach (var image in galleryList)
+            {
+                <dt class="col-sm-2">
+                    imagem
+                </dt>
+                <dd class="col-sm-10">
+                    <img src="data:.png;base64,@Convert.ToBase64String(image)" style="max-width: 400px;max-height: 300px;">
+                </dd>
+            }
+        </dl>
+    }
+
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
