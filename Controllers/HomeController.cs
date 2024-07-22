@@ -22,92 +22,104 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-            var applicationDbContext = _context.Ads.Include(a => a.User)
-                .Include(a => a.adStatus)
-                .Include(a => a.room)
-                .Include(a => a.room.location)
-                .ThenInclude(a => a.city);
+        var applicationDbContext = _context.Ads.Include(a => a.User)
+            .Include(a => a.adStatus)
+            .Include(a => a.room)
+            .Include(a => a.room.location)
+            .ThenInclude(a => a.city);
 
-            var morePopulardata = applicationDbContext
-                .OrderByDescending(a => a.ViewNumber)
-                .Take(3).ToList();
-            
-            var cityOneData = applicationDbContext
-                .Where(a => a.room.location.city.NumberOfAds >= 3)
-                .ToList();
-            cityOneData = cityOneData
-                .OrderBy(r => Guid.NewGuid())
-                .Take(3).ToList();
-            
-            string cityOneName = "";
-            if(cityOneData.Count > 0)
-                cityOneName =  cityOneData.First().room.location.city.Name;
+        var morePopulardata = applicationDbContext
+            .OrderByDescending(a => a.ViewNumber)
+            .Take(3).ToList();
 
-            var cityTwoData = applicationDbContext
-                .Where(a => a.room.location.city.NumberOfAds >= 3 && !a.room.location.city.Name.Equals(cityOneName))
-                .ToList();     
+        var cityOneData = applicationDbContext
+            .Where(a => a.room.location.city.NumberOfAds >= 3)
+            .ToList();
+        cityOneData = cityOneData
+            .OrderBy(r => Guid.NewGuid())
+            .Take(3).ToList();
 
-            cityTwoData = cityTwoData.OrderBy(r => Guid.NewGuid())
-                .Take(3).ToList();
-                
-            string cityTwoName = "";
-            if(cityTwoData.Count > 0)
-                cityTwoName =  cityTwoData.First().room.location.city.Name;
+        string cityOneName = "";
+        if (cityOneData.Count > 0)
+            cityOneName = cityOneData.First().room.location.city.Name;
 
+        var cityTwoData = applicationDbContext
+            .Where(a => a.room.location.city.NumberOfAds >= 3 && !a.room.location.city.Name.Equals(cityOneName))
+            .ToList();
 
-            ICollection<AdCardViewModel> morePopular = new List<AdCardViewModel>();
-            ICollection<AdCardViewModel> cityOne = new List<AdCardViewModel>();
-            ICollection<AdCardViewModel> cityTwo = new List<AdCardViewModel>();
+        cityTwoData = cityTwoData.OrderBy(r => Guid.NewGuid())
+            .Take(3).ToList();
 
-            foreach(var ad in morePopulardata){
-                AdCardViewModel tempModel = new AdCardViewModel{
-                    Id = ad.Id,
-                    Title = ad.Title,
-                    Description = ad.Description,
-                    MainPhoto = ad.MainPhoto,
-                    PhotoFormat = ad.PhotoFormat,
-                    City = ad.room.location.city.Name,
-                    Place = ad.room.location.Place
-                };
-                morePopular.Add(tempModel);
-            }
-
-            foreach(var ad in cityOneData){
-                AdCardViewModel tempModel = new AdCardViewModel{
-                    Id = ad.Id,
-                    Title = ad.Title,
-                    Description = ad.Description,
-                    MainPhoto = ad.MainPhoto,
-                    PhotoFormat = ad.PhotoFormat,
-                    City = ad.room.location.city.Name,
-                    Place = ad.room.location.Place
-                };
-                cityOne.Add(tempModel);
-            }
-
-                foreach(var ad in cityTwoData){
-                AdCardViewModel tempModel = new AdCardViewModel{
-                    Id = ad.Id,
-                    Title = ad.Title,
-                    Description = ad.Description,
-                    MainPhoto = ad.MainPhoto,
-                    PhotoFormat = ad.PhotoFormat,
-                    City = ad.room.location.city.Name,
-                    Place = ad.room.location.Place
-                };
-                cityTwo.Add(tempModel);
-            }
+        string cityTwoName = "";
+        if (cityTwoData.Count > 0)
+            cityTwoName = cityTwoData.First().room.location.city.Name;
 
 
-            HomePageViewModel homePageViewModel = new HomePageViewModel{
-                    MorePopular = morePopular,
-                    CityOne = cityOne,
-                    cityOneName = cityOneName,
-                    CityTwo = cityTwo,
-                    cityTwoName = cityTwoName
+        ICollection<AdCardViewModel> morePopular = new List<AdCardViewModel>();
+        ICollection<AdCardViewModel> cityOne = new List<AdCardViewModel>();
+        ICollection<AdCardViewModel> cityTwo = new List<AdCardViewModel>();
+
+        foreach (var ad in morePopulardata)
+        {
+            AdCardViewModel tempModel = new AdCardViewModel
+            {
+                Id = ad.Id,
+                Title = ad.Title,
+                Description = ad.Description,
+                MainPhoto = ad.MainPhoto,
+                PhotoFormat = ad.PhotoFormat,
+                City = ad.room.location.city.Name,
+                Place = ad.room.location.Place,
+                Price = ad.room.Price
             };
+            morePopular.Add(tempModel);
+        }
 
-            return View(homePageViewModel);
+        foreach (var ad in cityOneData)
+        {
+            AdCardViewModel tempModel = new AdCardViewModel
+            {
+                Id = ad.Id,
+                Title = ad.Title,
+                Description = ad.Description,
+                MainPhoto = ad.MainPhoto,
+                PhotoFormat = ad.PhotoFormat,
+                City = ad.room.location.city.Name,
+                Place = ad.room.location.Place,
+                Price = ad.room.Price
+
+            };
+            cityOne.Add(tempModel);
+        }
+
+        foreach (var ad in cityTwoData)
+        {
+            AdCardViewModel tempModel = new AdCardViewModel
+            {
+                Id = ad.Id,
+                Title = ad.Title,
+                Description = ad.Description,
+                MainPhoto = ad.MainPhoto,
+                PhotoFormat = ad.PhotoFormat,
+                City = ad.room.location.city.Name,
+                Place = ad.room.location.Place,
+                Price = ad.room.Price
+
+            };
+            cityTwo.Add(tempModel);
+        }
+
+
+        HomePageViewModel homePageViewModel = new HomePageViewModel
+        {
+            MorePopular = morePopular,
+            CityOne = cityOne,
+            cityOneName = cityOneName,
+            CityTwo = cityTwo,
+            cityTwoName = cityTwoName
+        };
+
+        return View(homePageViewModel);
     }
 
     public IActionResult Privacy()

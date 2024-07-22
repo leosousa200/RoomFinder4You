@@ -35,8 +35,11 @@ namespace RoomFinder4You
         [Authorize]
         public async Task<IActionResult> Index()
         {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
             var ads = _context.Ads.
-                Include(a => a.User)
+                Where(ad => ad.User == user)
+                .Include(a => a.User)
                 .Include(a => a.adStatus)
                 .Include(a => a.room);
             return View(await ads.ToListAsync());
@@ -74,6 +77,7 @@ namespace RoomFinder4You
                 List<byte[]> imageData = ReadImageFilesFromDisk(new List<string>(Directory.GetFiles(galleryFolder, "")));
                 ViewData["galleryImages"] = imageData;
             }
+            ViewData["phoneNumber"] = ad.User.PhoneNumber;
 
             _context.Update(ad);
             await _context.SaveChangesAsync();
@@ -302,12 +306,14 @@ namespace RoomFinder4You
                 tempCity.NumberOfAds--;
                 Country tempCountry = tempCity.country;
                 tempCountry.NumberOfAds--;
+                Location tempLocation = ad.room.location;
                 _context.Cities.Update(tempCity);
                 _context.Countries.Update(tempCountry);
                 if (ad.room.Features != null)
                     _context.Features.RemoveRange(ad.room.Features);
 
                 _context.Rooms.Remove(ad.room);
+                _context.Locations.Remove(tempLocation);
 
                 // remove image folder
                 string uploadsFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder());

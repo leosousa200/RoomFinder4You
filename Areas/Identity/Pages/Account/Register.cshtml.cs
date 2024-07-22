@@ -76,7 +76,7 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required(ErrorMessage ="É obrigatório ter um email!")]
+            [Required(ErrorMessage = "É obrigatório ter um email!")]
             [EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
@@ -85,7 +85,7 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
-            [Required(ErrorMessage ="É obrigatório ter uma password!")]
+            [Required(ErrorMessage = "É obrigatório ter uma password!")]
             [StringLength(100, ErrorMessage = "Password demasiado pequena/grande.", MinimumLength = 6)]
             [DataType(DataType.Password)]
             [Display(Name = "Password")]
@@ -102,17 +102,24 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
 
 
 
-            [Required(ErrorMessage ="É obrigatório introduzir o seu nome!")]
+            [Required(ErrorMessage = "É obrigatório introduzir o seu nome!")]
             [StringLength(20, ErrorMessage = "Nome demasiado pequeno/longo.", MinimumLength = 2)]
             [DataType(DataType.Text)]
             [Display(Name = "Nome")]
-            public string FirstName{get;set;}
+            public string FirstName { get; set; }
 
-            [Required(ErrorMessage ="É obrigatório introduzir o seu apelido!")]
+            [Required(ErrorMessage = "É obrigatório introduzir o seu apelido!")]
             [StringLength(20, ErrorMessage = "Apelido demasiado pequeno/longo.", MinimumLength = 2)]
             [DataType(DataType.Text)]
             [Display(Name = "Apelido")]
-            public string LastName{get;set;}
+            public string LastName { get; set; }
+
+            [Required(ErrorMessage = "É obrigatório introduzir o número de contacto!")]
+            [StringLength(9, ErrorMessage = "Número incompleto.", MinimumLength = 9)]
+            [Display(Name = "Número de Contacto")]
+            [DataType(DataType.PhoneNumber)]
+            public string PhoneNumber { get; set; }
+
         }
 
 
@@ -135,6 +142,7 @@ namespace RoomFinder4You.Areas.Identity.Pages.Account
 
                 user.FirstName = Input.FirstName;
                 user.LastName = Input.LastName;
+                user.PhoneNumber = Input.PhoneNumber.ToString();
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
