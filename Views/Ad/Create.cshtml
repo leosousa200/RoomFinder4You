@@ -1,6 +1,11 @@
 @model RoomFinder4You.Models.Ad
 @using Microsoft.AspNetCore.Mvc.Rendering
 
+@section Scripts
+{
+    <script src="@Url.Content("~/js/imageverif.js")"></script>
+}
+
 @{
     ViewData["Title"] = "Criar Anúncio";
     var featureTypesList = ViewBag.FeatureTypesMandatory as IEnumerable<SelectListItem>;
@@ -47,13 +52,16 @@
                 <select asp-for="AdStatusId" class="form-control" asp-items="ViewBag.AdStatusId"></select>
             </div>
             <div class="form-group">
-                <label class="control-label">Imagem Principal</label>
-                <input type="file" name="imagem" accept="image/*" id="imagem" class="form-control-file" required>
+                <label class="control-label size-control">Imagem Principal</label>
+                <input type="file" name="imagem" accept="image/*" id="image" class="form-control-file" required>
             </div>
             <div class="form-group">
-                <label class="control-label">Galeria de imagens</label>
-                <input type="file" name="gallery" accept="image/*" id="imagem" class="form-control-file" required
+                <label class="control-label size-control">Galeria de imagens</label>
+                <input type="file" name="gallery" accept="image/*" id="images" class="form-control-file" required
                     multiple>
+            </div>
+            <div class="alert alert-info mt-2" id="warnMessage" role="alert">
+                Todas as imagens devem ter pelo menos 550 pixels de largura.
             </div>
             <hr />
             <h3> Características do quarto</h3>
@@ -77,6 +85,7 @@
             }
 
             <hr />
+
             <div class="form-group">
                 <input type="submit" value="Criar" class="btn btn-primary mt-1" />
             </div>

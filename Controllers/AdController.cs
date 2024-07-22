@@ -57,6 +57,7 @@ namespace RoomFinder4You
                 .Include(a => a.adStatus)
                 .Include(a => a.room).ThenInclude(a => a.Features).ThenInclude(a => a.featureType)
                 .Include(a => a.room.location)
+                .Include(a => a.room.location.city)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (ad == null) { return NotFound(); }
@@ -307,6 +308,14 @@ namespace RoomFinder4You
                     _context.Features.RemoveRange(ad.room.Features);
 
                 _context.Rooms.Remove(ad.room);
+
+                // remove image folder
+                string uploadsFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder());
+                uploadsFolder = Path.Combine(uploadsFolder, UploadHelper.GetAdsFolder());
+
+                uploadsFolder = Path.Combine(uploadsFolder, ("Ad_" + ad.Id));
+                Directory.Delete(uploadsFolder, true);
+
                 _context.Ads.Remove(ad);
             }
 
