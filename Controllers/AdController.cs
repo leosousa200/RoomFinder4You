@@ -41,7 +41,10 @@ namespace RoomFinder4You
                 Where(ad => ad.User == user)
                 .Include(a => a.User)
                 .Include(a => a.adStatus)
-                .Include(a => a.room);
+                .Include(a => a.room)
+                .Include(a => a.room.location)
+                .Include(a => a.room.location.city);
+            ;
             return View(await ads.ToListAsync());
         }
 
@@ -66,7 +69,7 @@ namespace RoomFinder4You
             if (ad == null) { return NotFound(); }
 
             // Increase the view number of the ad
-            ad.ViewNumber++;
+            ad.ClickNumber++;
 
             // Prepare gallery images to be shown
             string galleryFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder(),

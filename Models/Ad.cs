@@ -19,6 +19,9 @@ public class Ad
     public Byte[]? MainPhoto { get; set; }
     public String? PhotoFormat { get; set; }
     public String UserID { get; set; }
+    [Display(Name = "Número de visualizações")]
     public int ViewNumber { get; set; } = 0;
+    [Display(Name = "Número de clicks")]
+    public int ClickNumber { get; set; } = 0;
     public ApplicationUser User { get; set; }
 }

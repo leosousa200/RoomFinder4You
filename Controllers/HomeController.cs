@@ -29,7 +29,7 @@ public class HomeController : Controller
             .ThenInclude(a => a.city);
 
         var morePopulardata = applicationDbContext
-            .OrderByDescending(a => a.ViewNumber)
+            .OrderByDescending(a => a.ClickNumber)
             .Take(3).ToList();
 
         var cityOneData = applicationDbContext
@@ -40,9 +40,18 @@ public class HomeController : Controller
             .Take(3).ToList();
 
         string cityOneName = "";
-        if (cityOneData.Count > 0)
-            cityOneName = cityOneData.First().room.location.city.Name;
+        if (morePopulardata.Count > 0)
+        {
+            morePopulardata.ToList().ForEach(a => a.ViewNumber++);
+            _context.Ads.UpdateRange(morePopulardata);
+        }
 
+        if (cityOneData.Count > 0)
+        {
+            cityOneName = cityOneData.First().room.location.city.Name;
+            cityOneData.ToList().ForEach(a => a.ViewNumber++);
+            _context.Ads.UpdateRange(cityOneData);
+        }
         var cityTwoData = applicationDbContext
             .Where(a => a.room.location.city.NumberOfAds >= 3 && !a.room.location.city.Name.Equals(cityOneName))
             .ToList();
@@ -52,7 +61,10 @@ public class HomeController : Controller
 
         string cityTwoName = "";
         if (cityTwoData.Count > 0)
+        {
             cityTwoName = cityTwoData.First().room.location.city.Name;
+            cityTwoData.ToList().ForEach(a => a.ViewNumber++);
+        }
 
 
         ICollection<AdCardViewModel> morePopular = new List<AdCardViewModel>();
@@ -119,6 +131,7 @@ public class HomeController : Controller
             cityTwoName = cityTwoName
         };
 
+        await _context.SaveChangesAsync();
         return View(homePageViewModel);
     }
 
