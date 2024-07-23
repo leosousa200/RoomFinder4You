@@ -4,6 +4,8 @@
     ViewData["Title"] = "Meus anúncios";
 }
 
+
+
 <div class="row align-items-end">
     <div class="col">
         <h1>Meus anúncios</h1>
@@ -27,7 +29,7 @@
                 </div>
             </div>
 
-            <div class="col-sm-7 p-3 border border-primary">
+            <div class="col-sm-6 p-3 border border-primary">
                 <div class="row mt-2">
                     <h3>@Html.DisplayFor(modelItem => item.Title)</h3>
 
@@ -50,11 +52,16 @@
 
 
             </div>
-            <div class="col-sm-1 border border-primary d-flex align-items-center justify-content-center"> <a
+            <div class="col-sm-1 p-3 border border-primary d-flex align-items-center justify-content-center"> <a
+                    asp-action="Details" asp-route-id="@item.Id">
+                    <img src="/svg/view-simple-815-svgrepo-com.svg" alt="" class="img-fluid"></a>
+            </div>
+
+            <div class="col-sm-1 p-3 border border-primary d-flex align-items-center justify-content-center"> <a
                     asp-action="Edit" asp-route-id="@item.Id">
                     <img src="/svg/edit-svgrepo-com.svg" alt="" class="img-fluid"></a>
             </div>
-            <div class="col-sm-1 border border-primary d-flex align-items-center justify-content-center"> <a
+            <div class="col-sm-1 p-3 border border-primary d-flex align-items-center justify-content-center"> <a
                     asp-action="Delete" asp-route-id="@item.Id"><img src="/svg/delete-svgrepo-com.svg" alt=""
                         class="img-fluid col d-flex align-items-center justify-content-center"></a>
             </div>

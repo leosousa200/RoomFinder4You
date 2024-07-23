@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -103,6 +104,111 @@ namespace RoomFinder4You
             return View();
         }
 
+
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit([Bind("Id,Title,Description,AdStatusId,room.Price")] Ad ad, float price,
+            [Bind("CBP,AQU,TAM,MOB,ELE,AGU,GAS")] FeaturesInitialsViewModel featuresInitials, IFormFile imagem,
+            IFormFileCollection gallery, int cityId, string place)
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            Ad? InitialAd = _context.Ads.Where(a => a.Id == ad.Id)
+                .Include(a => a.User)
+                .Include(a => a.adStatus)
+                .Include(a => a.room).ThenInclude(a => a.Features).ThenInclude(a => a.featureType)
+                .Include(a => a.room.location)
+                .Include(a => a.room.location.city).FirstOrDefault();
+
+            if (InitialAd == null)
+            {
+                return NotFound();
+            }
+            if (user != InitialAd.User)
+            {
+                return new NotEnoughPermissions();
+            }
+
+
+            if (InitialAd.Title != ad.Title)
+                InitialAd.Title = ad.Title;
+
+            if (InitialAd.Description != ad.Description)
+                InitialAd.Description = ad.Description;
+
+            if (InitialAd.AdStatusId != ad.AdStatusId)
+                InitialAd.AdStatusId = ad.AdStatusId;
+
+            if (InitialAd.room.location.city.Id != cityId)
+                InitialAd.room.location.city = _context.Cities.Where(city => city.Id == cityId).FirstOrDefault()!;
+
+            if (InitialAd.room.location.Place != place)
+                InitialAd.room.location.Place = place;
+
+            if (InitialAd.room.Price != price)
+                InitialAd.room.Price = price;
+
+            // Mandatory Features
+            List<Feature>? features = FeaturesProcess(featuresInitials);
+            if (features == null)
+                return View(ad);
+            if (InitialAd.room.Features != features)
+                InitialAd.room.Features = features;
+
+            // If Main Image changes
+            byte[]? bytes;
+            if ((bytes = ImageToByte(imagem)) != null)
+            {
+                InitialAd.PhotoFormat = imagem.ContentType;
+                InitialAd.MainPhoto = null;
+                InitialAd.MainPhoto = bytes;
+            }
+
+            if (gallery.Count != 0)
+            {
+                removeGallery(InitialAd.Id);
+                UploadImages(InitialAd, gallery);
+            }
+
+
+            try
+            {
+                _context.Update(InitialAd);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AdExists(InitialAd.Id))
+                {
+                    return NotFound();
+                }
+            }
+
+
+            ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Status");
+            ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Initials", "Name");
+            ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Initials", "Name");
+            ViewData["CityId"] = new SelectList(_context.Cities, "Id", "Name");
+            return View(ad);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         /// <summary>
         /// [POST]
         /// Ad creation.
@@ -200,56 +306,29 @@ namespace RoomFinder4You
                 return NotFound();
             }
 
-            var ad = await _context.Ads.FindAsync(id);
+            var ad = await _context.Ads
+                .Include(a => a.User)
+                .Include(a => a.adStatus)
+                .Include(a => a.room).ThenInclude(a => a.Features).ThenInclude(a => a.featureType)
+                .Include(a => a.room.location)
+                .Include(a => a.room.location.city)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            if (user != ad.User)
+            {
+                return new NotEnoughPermissions();
+            }
+
             if (ad == null)
             {
                 return NotFound();
             }
-            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", ad.UserID);
-            ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Id", ad.AdStatusId);
-            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", ad.RoomId);
-            return View(ad);
-        }
-
-        /// <summary>
-        /// [Post]
-        /// Edit an ad.
-        /// </summary>
-        /// <param name="id">Id of the ad.</param>
-        /// <param name="ad">Data of the ad.</param>
-        /// <returns>Redirect to index.</returns>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,RoomId,AdStatusId,UserID")] Ad ad)
-        {
-            if (id != ad.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(ad);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AdExists(ad.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["UserID"] = new SelectList(_context.Users, "Id", "Id", ad.UserID);
-            ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Id", ad.AdStatusId);
-            ViewData["RoomId"] = new SelectList(_context.Rooms, "Id", "Id", ad.RoomId);
+            ViewData["AdStatusId"] = new SelectList(_context.AdsStatus, "Id", "Status");
+            ViewData["FeatureTypesMandatory"] = new SelectList(_context.FeatureTypes.Where(v => v.IsMandatory), "Initials", "Name");
+            ViewData["FeatureTypesNonMandatory"] = new SelectList(_context.FeatureTypes.Where(v => !v.IsMandatory), "Initials", "Name");
+            ViewData["CityId"] = new SelectList(_context.Cities, "Id", "Name");
             return View(ad);
         }
 
@@ -330,6 +409,16 @@ namespace RoomFinder4You
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        private bool removeGallery(int adId)
+        {
+            string uploadsFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder());
+            uploadsFolder = Path.Combine(uploadsFolder, UploadHelper.GetAdsFolder());
+
+            uploadsFolder = Path.Combine(uploadsFolder, ("Ad_" + adId));
+            Directory.Delete(uploadsFolder, true);
+            return true;
         }
 
         /// <summary>

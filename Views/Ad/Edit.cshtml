@@ -1,16 +1,24 @@
 @model RoomFinder4You.Models.Ad
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Editar Anúncio";
+    var featureTypesList = ViewBag.FeatureTypesMandatory as IEnumerable<SelectListItem>;
+    var featureTypesListNon = ViewBag.FeatureTypesNonMandatory as IEnumerable<SelectListItem>;
+    var dict = Model.room.Features;
+
 }
 
-<h1>Edit</h1>
+@section Scripts
+{
+    <script src="@Url.Content("~/js/imageverif.js")"></script>
+}
 
-<h4>Ad</h4>
+<h1>Editar Anúncio</h1>
+
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
@@ -24,22 +32,64 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="RoomId" class="control-label"></label>
-                <select asp-for="RoomId" class="form-control" asp-items="ViewBag.RoomId"></select>
-                <span asp-validation-for="RoomId" class="text-danger"></span>
+                <label asp-for="room.location.city.Name" class="control-label"></label>
+                <select name="cityId" asp-for="room.location.city.Id" class="form-control" asp-items="ViewBag.CityId"
+                    required>
+                    <option></option>
+                </select>
             </div>
             <div class="form-group">
-                <label asp-for="AdStatusId" class="control-label"></label>
+                <label asp-for="room.location.Place" class="control-label"></label>
+                <input name="place" asp-for="room.location.Place" class="form-control" />
+                <span asp-validation-for="room.location.Place" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="room.Price" class="control-label"></label>
+                <input name="Price" asp-for="room.Price" class="form-control" />
+                <span asp-validation-for="room.Price" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="adStatus" class="control-label"></label>
                 <select asp-for="AdStatusId" class="form-control" asp-items="ViewBag.AdStatusId"></select>
-                <span asp-validation-for="AdStatusId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="UserID" class="control-label"></label>
-                <select asp-for="UserID" class="form-control" asp-items="ViewBag.UserID"></select>
-                <span asp-validation-for="UserID" class="text-danger"></span>
+                <label class="control-label size-control">Alterar Imagem Principal</label>
+                <input type="file" name="imagem" accept="image/*" id="image" class="form-control-file">
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <label class="control-label size-control">Alterar Galeria de Fotos</label>
+                <input type="file" name="gallery" accept="image/*" id="images" class="form-control-file" multiple>
+            </div>
+            <div class="alert alert-info mt-2" id="warnMessage" role="alert">
+                Todas as imagens devem ter pelo menos 550 pixels de largura.
+            </div>
+            <hr />
+            <h3> Características do quarto</h3>
+            @foreach (var item in featureTypesList)
+            {
+                <div class="form-group">
+                    <label class="control-label">@item.Text<span class="text-danger">*</span></label>
+                    <input type="text"
+                        asp-for="@dict.Where(feat => feat.featureType.Initials.Equals(item.Value)).FirstOrDefault().Value"
+                        name="@item.Value" class="form-control" required />
+                </div>
+            }
+            <p class="text-danger">Características marcadas com '*' são obrigatórias!</p>
+            <hr />
+
+            <h3> Características adicionais</h3>
+            @foreach (var item in featureTypesListNon)
+            {
+                <div class="form-group">
+                    <label class="control-label">@item.Text</label>
+                    <input type="text"
+                        asp-for="@dict.Where(feat => feat.featureType.Initials.Equals(item.Value)).FirstOrDefault().Value"
+                        id="@item.Value" name="@item.Value" class="form-control" />
+                </div>
+            }
+            <hr />
+            <div class="form-group">
+                <input type="submit" value="Guardar" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -48,4 +98,3 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
