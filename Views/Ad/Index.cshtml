@@ -23,7 +23,7 @@
     @foreach (var item in Model)
     {
         <div class="row mb-3 border border-primary" style="--bs-gutter-x:0rem;">
-            <div class="col-sm-3 border-right border-primary">
+            <div class="col-sm-3 border border-primary">
                 <div>
                     <img class="img-fluid" src="data:@item.PhotoFormat;base64,@Convert.ToBase64String(item.MainPhoto)">
                 </div>
