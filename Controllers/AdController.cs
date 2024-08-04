@@ -53,7 +53,7 @@ namespace RoomFinder4You
 
 
 
-        public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 3, string? keywords = null)
+        public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 5, string? keywords = null)
         {
             var ads = _context.Ads.Include(a => a.User)
                 .Include(a => a.adStatus)
@@ -75,7 +75,10 @@ namespace RoomFinder4You
 
             await _context.SaveChangesAsync();
             ViewData["pageNumbers"] = (int)Math.Ceiling((decimal)ads.Count() / pageSize);
+            ViewData["count"] = ads.Count();
             ViewData["currentPage"] = pageNumber;
+            ViewData["pageSize"] = pageSize;
+            ViewData["searched"] = keywords;
             return View(pagedAds);
         }
 
