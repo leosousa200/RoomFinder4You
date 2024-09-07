@@ -1,51 +1,148 @@
 @model RoomFinder4You.Models.Ad
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Eliminar Anúncio";
+    var featuresMandatory = Model.room.Features.Where(a => a.featureType.IsMandatory).AsEnumerable<Feature>();
+    var features = Model.room.Features.Where(a => !a.featureType.IsMandatory).AsEnumerable<Feature>();
+    List<byte[]> galleryList = ViewBag.galleryImages;
+    int slideNum = 1;
 }
 
-<h1>Delete</h1>
+<h5><a asp-action="Index">&lt;&lt;Voltar</a></h5>
 
-<h3>Are you sure you want to delete this?</h3>
 <div>
-    <h4>Ad</h4>
+    <h4 class="mt-2">@Html.DisplayFor(model => model.Title)</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.room)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.room.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.adStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.adStatus.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.User)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.User.Id)
-        </dd>
-    </dl>
-    
+
+    <div class="row">
+        <div class="col">
+            <div id="carouselExampleIndicators" class="carousel slide"
+                style="width: 600px;height: 300px;background-color: #b5b5b3;">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0"
+                        class="active" aria-current="true" aria-label="0"></button>
+
+                    @foreach (var _ in galleryList)
+                    {
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to=@slideNum
+                            class="active" aria-current="true" aria-label=@slideNum></button>
+                        slideNum++;
+                    }
+                </div>
+
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="data:@Model.PhotoFormat;base64,@Convert.ToBase64String(Model.MainPhoto)"
+                            class="mx-auto d-block" style="max-width: 550px;max-height: 300px;">
+                    </div>
+
+                    @foreach (var image in galleryList)
+                    {
+                        <div class="carousel-item">
+                            <img src="data:.png;base64,@Convert.ToBase64String(image)" class="mx-auto d-block "
+                                style="max-width: 550px;max-height: 300px;">
+                        </div>
+
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+        <div class="col d-flex flex-column justify-content-center full-height">
+            <dl class="row">
+                <dt class="col-sm-2 ">
+                    @Html.DisplayNameFor(model => model.room.location.city.Name)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.room.location.city.Name)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.room.location.Place)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.room.location.Place)
+                </dd>
+                <dt class="col-sm-2">
+                    @Html.DisplayNameFor(model => model.room.Price)
+                </dt>
+                <dd class="col-sm-10">
+                    @Html.DisplayFor(model => model.room.Price) €
+                </dd>
+            </dl>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col"> <h4 class="mt-2">Características do quarto</h4></div>
+        <div class="col"> <h4 class="mt-2">Características adicionais</h4></div>
+    </div>
+   
+    <hr />
+
+    <div class="row">
+        <div class="col"> 
+            <dl>
+            @foreach (var feat in featuresMandatory)
+            {
+                
+                <dt class="col-sm-7">
+                    @feat.featureType.Name
+                </dt>
+                <dd class="col-sm-5">
+                    @if (feat.featureType.Name != "Tamanho")
+                    {
+                        <p>@feat.Value</p>
+                    }
+                    else
+                    {
+                        <p>@feat.Value m2</p>
+                    }
+                </dd>
+            }
+            </dl>
+        </div>
+        <div class="col">
+@if (features.Count() != 0)
+    {
+<dl>
+            @foreach (var feat in features)
+            {
+                <dt class="col-sm-7">
+                    @feat.featureType.Name
+                </dt>
+                <dd class="col-sm-5">
+                    @feat.Value
+                </dd>
+            }
+            </dl>
+
+}
+        </div>
+
+    </div>
+        <h4>Eliminar Anúncio permanentemente</h4>
+        <hr />
+</div>
+<div>
+</div>
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+        <div class="col"><input type="submit" value="Confirmar" style="min-width: 150px;" class="btn btn-danger" /></div>
+            </form>
+
+        <div class="row">
+                        <div class="col"> <a asp-action="Index" style="min-width: 150px;"
+                        class="btn btn-secondary mt-1 ">Voltar</a>
+                </div>
 </div>
+

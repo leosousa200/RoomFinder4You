@@ -22,6 +22,7 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
+
         var applicationDbContext = _context.Ads.Include(a => a.User)
             .Include(a => a.adStatus)
             .Include(a => a.room)
@@ -66,61 +67,9 @@ public class HomeController : Controller
             cityTwoData.ToList().ForEach(a => a.ViewNumber++);
         }
 
-
-        ICollection<AdCardViewModel> morePopular = new List<AdCardViewModel>();
-        ICollection<AdCardViewModel> cityOne = new List<AdCardViewModel>();
-        ICollection<AdCardViewModel> cityTwo = new List<AdCardViewModel>();
-
-        foreach (var ad in morePopulardata)
-        {
-            AdCardViewModel tempModel = new AdCardViewModel
-            {
-                Id = ad.Id,
-                Title = ad.Title,
-                Description = ad.Description,
-                MainPhoto = ad.MainPhoto,
-                PhotoFormat = ad.PhotoFormat,
-                City = ad.room.location.city.Name,
-                Place = ad.room.location.Place,
-                Price = ad.room.Price
-            };
-            morePopular.Add(tempModel);
-        }
-
-        foreach (var ad in cityOneData)
-        {
-            AdCardViewModel tempModel = new AdCardViewModel
-            {
-                Id = ad.Id,
-                Title = ad.Title,
-                Description = ad.Description,
-                MainPhoto = ad.MainPhoto,
-                PhotoFormat = ad.PhotoFormat,
-                City = ad.room.location.city.Name,
-                Place = ad.room.location.Place,
-                Price = ad.room.Price
-
-            };
-            cityOne.Add(tempModel);
-        }
-
-        foreach (var ad in cityTwoData)
-        {
-            AdCardViewModel tempModel = new AdCardViewModel
-            {
-                Id = ad.Id,
-                Title = ad.Title,
-                Description = ad.Description,
-                MainPhoto = ad.MainPhoto,
-                PhotoFormat = ad.PhotoFormat,
-                City = ad.room.location.city.Name,
-                Place = ad.room.location.Place,
-                Price = ad.room.Price
-
-            };
-            cityTwo.Add(tempModel);
-        }
-
+        ICollection<AdCardViewModel> morePopular = setCardInfo(morePopulardata);
+        ICollection<AdCardViewModel> cityOne = setCardInfo(cityOneData);
+        ICollection<AdCardViewModel> cityTwo = setCardInfo(cityTwoData);
 
         HomePageViewModel homePageViewModel = new HomePageViewModel
         {
@@ -133,6 +82,28 @@ public class HomeController : Controller
 
         await _context.SaveChangesAsync();
         return View(homePageViewModel);
+    }
+
+    private ICollection<AdCardViewModel> setCardInfo(List<Ad> ads)
+    {
+        ICollection<AdCardViewModel> cards = new List<AdCardViewModel>();
+        foreach (var ad in ads)
+        {
+            AdCardViewModel tempModel = new AdCardViewModel
+            {
+                Id = ad.Id,
+                Title = ad.Title,
+                Description = ad.Description,
+                MainPhoto = ad.MainPhoto,
+                PhotoFormat = ad.PhotoFormat,
+                City = ad.room.location.city.Name,
+                Place = ad.room.location.Place,
+                Price = ad.room.Price
+
+            };
+            cards.Add(tempModel);
+        }
+        return cards;
     }
 
     public IActionResult Privacy()

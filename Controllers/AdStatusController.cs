@@ -11,7 +11,7 @@ using RoomFinder4You.Models;
 
 namespace RoomFinder4You
 {
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdStatusController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -24,9 +24,9 @@ namespace RoomFinder4You
         // GET: AdStatus
         public async Task<IActionResult> Index()
         {
-              return _context.AdsStatus != null ? 
-                          View(await _context.AdsStatus.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.AdsStatus'  is null.");
+            return _context.AdsStatus != null ?
+                        View(await _context.AdsStatus.ToListAsync()) :
+                        Problem("Entity set 'ApplicationDbContext.AdsStatus'  is null.");
         }
 
         // GET: AdStatus/Details/5
@@ -152,14 +152,14 @@ namespace RoomFinder4You
             {
                 _context.AdsStatus.Remove(adStatus);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool AdStatusExists(int id)
         {
-          return (_context.AdsStatus?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.AdsStatus?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

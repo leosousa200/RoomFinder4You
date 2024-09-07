@@ -361,7 +361,7 @@ namespace RoomFinder4You
         /// </summary>
         /// <param name="id">Id of the ad.</param>
         /// <returns>View of deletion with the data of the ad.</returns>
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> DeleteOld(int? id)
         {
             if (id == null || _context.Ads == null)
             {
@@ -378,6 +378,40 @@ namespace RoomFinder4You
             if (ad == null)
             {
                 return NotFound();
+            }
+
+            return View(ad);
+        }
+
+        /// <summary>
+        /// [GET]
+        /// Ad delete page.
+        /// </summary>
+        /// <param name="id">Id of the ad.</param>
+        /// <returns>View of deletion with the data of the ad.</returns>
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null || _context.Ads == null) { return NotFound(); }
+
+            var ad = await _context.Ads
+                .Include(a => a.User)
+                .Include(a => a.adStatus)
+                .Include(a => a.room).ThenInclude(a => a.Features).ThenInclude(a => a.featureType)
+                .Include(a => a.room.location)
+                .Include(a => a.room.location.city)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (ad == null) { return NotFound(); }
+
+
+            // Prepare gallery images to be shown
+            string galleryFolder = Path.Combine(_hostingEnvironment.ContentRootPath, UploadHelper.GetUploadFolder(),
+             UploadHelper.GetAdsFolder(), "Ad_" + ad.Id);
+
+            if (Directory.Exists(galleryFolder))
+            {
+                List<byte[]> imageData = ReadImageFilesFromDisk(new List<string>(Directory.GetFiles(galleryFolder, "")));
+                ViewData["galleryImages"] = imageData;
             }
 
             return View(ad);
