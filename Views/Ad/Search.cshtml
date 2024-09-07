@@ -104,15 +104,15 @@
         {
             <a asp-action="Details" asp-controller="Ad" asp-route-id="@item.Id"
                 style="color: inherit;text-decoration: none;">
-                <div class="row mb-3 border border-primary" style="--bs-gutter-x:0rem;">
-                    <div class="col-sm-4 border border-primary">
+                <div class="row mb-3 border border-info" style="--bs-gutter-x:0rem;">
+                    <div class="col-sm-4 border border-info">
                         <div>
                             <img class="img-fluid"
                                 src="data:@item.PhotoFormat;base64,@Convert.ToBase64String(item.MainPhoto)">
                         </div>
                     </div>
 
-                    <div class="col-sm-8 p-2 border border-primary">
+                    <div class="col-sm-8 p-2 border border-info">
                         <div class="row">
                             <h3>@Html.DisplayFor(modelItem => item.Title)</h3>
 

@@ -26,11 +26,21 @@
                 <input asp-for="Title" class="form-control" />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
+            @*
+            <div class="form-group">
+            <label asp-for="Description" class="control-label"></label>
+            <input asp-for="Description" class="form-control" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+            </div>*@
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+                <textarea asp-for="Description" style="resize: none;" class="form-control" rows="3">
+                    @Model.Description
+                </textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+
+
             <div class="form-group">
                 <label asp-for="room.location.city.Name" class="control-label"></label>
                 <select name="cityId" asp-for="room.location.city.Id" class="form-control" asp-items="ViewBag.CityId"
@@ -89,12 +99,11 @@
             }
             <hr />
             <div class="form-group text-center row">
-
-                <div class="col">
-                    <input type="submit" value="Guardar" class="btn btn-primary" style="min-width: 150px;" />
-                </div>
                 <div class="col"> <a asp-action="Index" style="min-width: 150px;"
                         class="btn btn-secondary mt-1 ">Voltar</a>
+                </div>
+                <div class="col">
+                    <input type="submit" style="min-width: 150px;" value="Guardar" class="btn btn-primary mt-1" />
                 </div>
             </div>
         </form>
