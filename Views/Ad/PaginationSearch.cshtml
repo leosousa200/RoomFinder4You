@@ -1,0 +1,62 @@
+@{
+    int pageSize = ViewBag.pageSize;
+    int pageNumbers = ViewBag.pageNumbers;
+    int currentPage = ViewBag.currentPage;
+    int difNext = pageNumbers - currentPage;
+    string? searched = ViewBag.searched;
+    int difBef = 4;
+
+    if (currentPage <= 4)
+        difBef = currentPage - 1;
+    if (difNext > 4)
+        difNext = 4;
+
+    while ((difBef + difNext) > 4)
+    {
+        if (difBef >= difNext)
+            difBef--;
+        else
+            difNext--;
+    }
+
+}
+
+
+<div class="row mb-2 ">
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li class="page-item">
+                <a class="page-link" asp-action="Search"
+                    style="@(currentPage == 1 ? "pointer-events: none; cursor: default;" : "")"
+                    asp-route-pageNumber="@(currentPage-1)" asp-route-pageSize="@pageSize"
+                    asp-route-keywords="@searched" asp-route-cityId="@ViewBag.CityId"
+                    asp-route-priceMin="@ViewBag.priceMin" asp-route-priceMax="@ViewBag.priceMax"
+                    asp-route-ordering="@ViewBag.ordering" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                    <span class="sr-only">Previous</span>
+                </a>
+            </li>
+
+            @for (int i = currentPage - difBef; i <= (currentPage + difNext); i++)
+            {
+                <li class="page-item"><a class="page-link" style="@(currentPage == i ? "background-color:lightblue;" : "")"
+                        asp-action="Search" asp-route-pageNumber="@i" asp-route-keywords="@searched"
+                        asp-route-cityId="@ViewBag.CityId" asp-route-priceMin="@ViewBag.priceMin"
+                        asp-route-priceMax="@ViewBag.priceMax" asp-route-ordering="@ViewBag.ordering"
+                        asp-route-pageSize="@pageSize">@i</a></li>
+
+            }
+            <li class="page-item">
+                <a class="page-link"
+                    style="@(currentPage == pageNumbers ? "pointer-events: none; cursor: default;" : "")"
+                    asp-action="Search" asp-route-pageSize="@pageSize" asp-route-cityId="@ViewBag.CityId"
+                    asp-route-priceMin="@ViewBag.priceMin" asp-route-priceMax="@ViewBag.priceMax"
+                    asp-route-ordering="@ViewBag.ordering" asp-route-pageNumber="@(currentPage+1)"
+                    asp-route-keywords="@searched" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>

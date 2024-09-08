@@ -9,178 +9,30 @@
 
 @{
     ViewData["Title"] = "Procurar quartos";
-    int pageSize = ViewBag.pageSize;
-    int pageNumbers = ViewBag.pageNumbers;
-    int currentPage = ViewBag.currentPage;
-    int difNext = pageNumbers - currentPage;
-    string? searched = ViewBag.searched;
-    int difBef = 4;
-
-    if (currentPage <= 4)
-        difBef = currentPage - 1;
-    if (difNext > 4)
-        difNext = 4;
-
-    while ((difBef + difNext) > 4)
-    {
-        if (difBef >= difNext)
-            difBef--;
-        else
-            difNext--;
-    }
-
 }
+
 <form action="Search" class="row g-3">
     <div class="row">
         <div class="col-sm-2 border m-2">
-            <div class="row m-1 mt-3">
-                <label class="control-label">Cidade</label>
-                <select name="cityId" class="form-control" asp-items="@ViewBag.CityIdList">
-                    <option></option>
-                </select>
-            </div>
-            <div class="row m-1 mt-3">
-                <label class="control-label">Preço Mínimo</label>
-                <select name="priceMin" class="form-control" asp-items="@ViewBag.PriceMinList">
-                    <option></option>
-                </select>
-            </div>
-            <div class="row m-1 mt-3">
-                <label class="control-label">Preço Maximo</label>
-                <select name="priceMax" class="form-control" asp-items="@ViewBag.PriceMaxList">
-                    <option></option>
-                </select>
-            </div>
+            <partial name="FiltersSearch" />
+
         </div>
         <div class="col-sm-9 m-2">
             <partial name="TopSearch" />
-
 
             @if (Model.Count() > 0)
             {
                 @foreach (var item in Model)
                 {
-                    <a asp-action="Details" asp-controller="Ad" asp-route-id="@item.Id"
-                        style="color: inherit;text-decoration: none;">
-                        <div class="row mb-3 border border-info" style="--bs-gutter-x:0rem;">
-                            <div class="col-sm-4 border border-info">
-                                <div>
-                                    <img class="img-fluid"
-                                        src="data:@item.PhotoFormat;base64,@Convert.ToBase64String(item.MainPhoto)">
-                                </div>
-                            </div>
-
-                            <div class="col-sm-8 p-2 border border-info">
-                                <div class="row">
-                                    <h3>@Html.DisplayFor(modelItem => item.Title)</h3>
-
-                                </div>
-                                <div class="row">
-                                    <h7> @Html.DisplayNameFor(model => model.FirstOrDefault()!.room.location.city.Name):
-                                        @Html.DisplayFor(modelItem =>
-                                                 item.room.location.city.Name)</h7>
-                                </div>
-                                <div class="row">
-                                    <h7>@Html.DisplayNameFor(model => model.FirstOrDefault()!.room.location.Place):
-                                        @Html.DisplayFor(modelItem =>
-                                                 item.room.location.Place)</h7>
-                                </div>
-                                <div class="row text-end">
-                                    <h3>@Html.DisplayFor(modelItem
-                                                 =>
-                                                 item.room.Price)€
-                                    </h3>
-                                </div>
-
-                            </div>
-                        </div>
-                    </a>
+                    @Html.Partial("CardSearch", item)
                 }
 
-                <div class="row mb-2 ">
-                    @if (false)
-                    {
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination">
-                                <li class="page-item">
-                                    <a class="page-link" asp-action="Search"
-                                        style="@(currentPage == 1 ? "pointer-events: none; cursor: default;" : "")"
-                                        asp-route-pageNumber="@(currentPage-1)" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                        <span class="sr-only">Previous</span>
-                                    </a>
-                                </li>
-
-                                @for (int i = 1; i < (pageNumbers + 1); i++)
-                                {
-                                    <li class="page-item"><a class="page-link"
-                                            style="@(currentPage == i ? "background-color:lightblue;" : "")" asp-action="Search"
-                                            asp-route-pageNumber="@i">@i</a></li>
-                                }
-                                <li class="page-item">
-                                    <a class="page-link"
-                                        style="@(currentPage == pageNumbers ? "pointer-events: none; cursor: default;" : "")"
-                                        asp-action="Search" asp-route-pageNumber="@(currentPage+1)" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                        <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-
-                    }
-                    else if (true)
-                    {
-                        <nav aria-label="Page navigation example">
-                            <ul class="pagination">
-                                <li class="page-item">
-                                    <a class="page-link" asp-action="Search"
-                                        style="@(currentPage == 1 ? "pointer-events: none; cursor: default;" : "")"
-                                        asp-route-pageNumber="@(currentPage-1)" asp-route-pageSize="@pageSize"
-                                        asp-route-keywords="@searched" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                        <span class="sr-only">Previous</span>
-                                    </a>
-                                </li>
-
-                                @for (int i = currentPage - difBef; i <= (currentPage + difNext); i++)
-                                {
-                                    <li class="page-item"><a class="page-link"
-                                            style="@(currentPage == i ? "background-color:lightblue;" : "")" asp-action="Search"
-                                            asp-route-pageNumber="@i" asp-route-keywords="@searched"
-                                            asp-route-pageSize="@pageSize">@i</a></li>
-
-                                }
-                                <li class="page-item">
-                                    <a class="page-link"
-                                        style="@(currentPage == pageNumbers ? "pointer-events: none; cursor: default;" : "")"
-                                        asp-action="Search" asp-route-pageSize="@pageSize"
-                                        asp-route-pageNumber="@(currentPage+1)" asp-route-keywords="@searched"
-                                        aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                        <span class="sr-only">Next</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    }
-
-                </div>
+                <partial name="PaginationSearch" />
             }
             else
             {
-                <div class="card">
-                    <div class="card-header">
-                        Nenhum anúncio encontrado
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">Não existem anúncios que correspondam com a pesquisa pretendida.
-                        </p>
-                    </div>
-                </div>
-
+                <partial name="NoResultsSearch" />
             }
 </form>
-
 </div>
 </div>

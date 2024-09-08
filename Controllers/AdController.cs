@@ -54,6 +54,11 @@ namespace RoomFinder4You
 
 
 
+        /// <summary>
+        /// [GET]
+        /// Ad management page.
+        /// </summary>
+        /// <returns>View with list of ads.</returns>
         public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 5, string? keywords = null, int? cityId = null, int? priceMin = null, int? priceMax = null, int? ordering = null)
         {
             var ads = _context.Ads.Include(a => a.User)
@@ -96,6 +101,9 @@ namespace RoomFinder4You
             ViewData["currentPage"] = pageNumber;
             ViewData["pageSize"] = pageSize;
             ViewData["searched"] = keywords;
+            ViewData["priceMax"] = priceMax;
+            ViewData["ordering"] = ordering;
+            ViewData["priceMin"] = priceMin;
             ViewData["CityId"] = cityId;
             ViewData["AdsCountList"] = new SelectList(GetPageAds(4), "Key", "Value", pageSize);
             ViewData["CityIdList"] = new SelectList(_context.Cities.OrderBy(city => city.Name), "Id", "Name", cityId);
@@ -126,6 +134,16 @@ namespace RoomFinder4You
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (ad == null) { return NotFound(); }
+
+            if (ad.adStatus.Id == 2)
+            {
+                var user = await _userManager.GetUserAsync(HttpContext.User);
+
+                if (user != ad.User)
+                {
+                    return new NotEnoughPermissions();
+                }
+            }
 
             // Increase the view number of the ad
             ad.ClickNumber++;
@@ -306,6 +324,7 @@ namespace RoomFinder4You
             {
                 return NotFound();
             }
+
             if (user != InitialAd.User)
             {
                 return new NotEnoughPermissions();
@@ -375,33 +394,6 @@ namespace RoomFinder4You
             return View(ad);
         }
 
-        /// <summary>
-        /// [GET]
-        /// Ad delete page.
-        /// </summary>
-        /// <param name="id">Id of the ad.</param>
-        /// <returns>View of deletion with the data of the ad.</returns>
-        public async Task<IActionResult> DeleteOld(int? id)
-        {
-            if (id == null || _context.Ads == null)
-            {
-                return NotFound();
-            }
-
-            var ad = await _context.Ads
-                .Include(a => a.User)
-                .Include(a => a.adStatus)
-                .Include(a => a.room)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-
-            if (ad == null)
-            {
-                return NotFound();
-            }
-
-            return View(ad);
-        }
 
         /// <summary>
         /// [GET]
@@ -422,6 +414,13 @@ namespace RoomFinder4You
                 .FirstOrDefaultAsync(m => m.Id == id);
 
             if (ad == null) { return NotFound(); }
+
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            if (user != ad.User)
+            {
+                return new NotEnoughPermissions();
+            }
 
 
             // Prepare gallery images to be shown
@@ -457,6 +456,14 @@ namespace RoomFinder4You
                 .ThenInclude(a => a.location)
                 .ThenInclude(a => a.city)
                 .ThenInclude(a => a.country).First(ad => ad.Id == id);
+
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+
+            if (user != ad.User)
+            {
+                return new NotEnoughPermissions();
+            }
+
             if (ad != null)
             {
 

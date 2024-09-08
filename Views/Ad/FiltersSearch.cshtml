@@ -1,0 +1,21 @@
+@using Helpers
+@model PaginatedList<RoomFinder4You.Models.Ad>
+
+<div class="row m-1 mt-3">
+    <label class="control-label">Cidade</label>
+    <select name="cityId" class="form-control" asp-items="@ViewBag.CityIdList">
+        <option></option>
+    </select>
+</div>
+<div class="row m-1 mt-3">
+    <label class="control-label">Preço Mínimo</label>
+    <select name="priceMin" class="form-control" asp-items="@ViewBag.PriceMinList">
+        <option></option>
+    </select>
+</div>
+<div class="row m-1 mt-3">
+    <label class="control-label">Preço Maximo</label>
+    <select name="priceMax" class="form-control" asp-items="@ViewBag.PriceMaxList">
+        <option></option>
+    </select>
+</div>
