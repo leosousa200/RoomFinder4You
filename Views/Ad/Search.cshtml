@@ -9,7 +9,6 @@
 
 @{
     ViewData["Title"] = "Procurar quartos";
-    int count = ViewBag.count;
     int pageSize = ViewBag.pageSize;
     int pageNumbers = ViewBag.pageNumbers;
     int currentPage = ViewBag.currentPage;
@@ -54,63 +53,8 @@
             </div>
         </div>
         <div class="col-sm-9 m-2">
-            <div class="row mb-2">
-                <div class="col-sm-2 border d-flex align-items-center justify-content-center">
-                    <h2 class="text-center">Local</h2>
-                </div>
-                <div class="col-sm-6 p-0 border">
-                    <input type="text" class="w-100 h-100" value="@searched" name="keywords" id="keywords">
-                </div>
-                <div class="col-sm-4 p-0 border">
-                    <button type="submit" id="search" class="w-100 h-100">
-                        <h2>Pesquisar</h2>
-                    </button>
-                </div>
-            </div>
-            <div class="row mb-1">
-                <div class="col">
-                    <h6>@count quartos Encontrados</h6>
-                </div>
-                <div class="col d-flex justify-content-end">
-                    <select name="ordering" class="form-control" asp-items="@ViewBag.OrderingList">
-                        <option></option>
-                    </select>
-                    <select name="pageSize" value="@pageSize" id="pageSize">
-                        @if (pageSize == 5)
-                        {
-                            <option value="5" selected>5</option>
-                        }
-                        else
-                        {
-                            <option value="5">5</option>
-                        }
-                        @if (pageSize == 10)
-                        {
-                            <option value="10" selected>10</option>
-                        }
-                        else
-                        {
-                            <option value="10">10</option>
-                        }
-                        @if (pageSize == 15)
-                        {
-                            <option value="15" selected>15</option>
-                        }
-                        else
-                        {
-                            <option value="15">15</option>
-                        }
-                        @if (pageSize == 20)
-                        {
-                            <option value="20" selected>20</option>
-                        }
-                        else
-                        {
-                            <option value="20">20</option>
-                        }
-                    </select>
-                </div>
-            </div>
+            <partial name="TopSearch" />
+
 
             @if (Model.Count() > 0)
             {
@@ -237,7 +181,6 @@
 
             }
 </form>
-
 
 </div>
 </div>

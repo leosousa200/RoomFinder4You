@@ -97,6 +97,7 @@ namespace RoomFinder4You
             ViewData["pageSize"] = pageSize;
             ViewData["searched"] = keywords;
             ViewData["CityId"] = cityId;
+            ViewData["AdsCountList"] = new SelectList(GetPageAds(4), "Key", "Value", pageSize);
             ViewData["CityIdList"] = new SelectList(_context.Cities.OrderBy(city => city.Name), "Id", "Name", cityId);
             ViewData["PriceMinList"] = new SelectList(list_prices, "Key", "Value", priceMin);
             ViewData["PriceMaxList"] = new SelectList(list_prices, "Key", "Value", priceMax);
@@ -753,6 +754,22 @@ namespace RoomFinder4You
             }
             return list;
         }
+
+        /// <summary>
+        /// Creates a Dictionary for choose of ads per page.
+        /// </summary>
+        /// <param name="value">Value * 5.</param>
+        /// <returns>Dictionary wit the choose ads per page.</returns>
+        private Dictionary<int, int> GetPageAds(int value)
+        {
+            var list = new Dictionary<int, int>();
+            for (int i = 1; i <= value; i++)
+            {
+                list.Add(i * 5, i * 5);
+            }
+            return list;
+        }
+
         /// <summary>
         /// Creates a Dictionary for ordering ads.
         /// </summary>
