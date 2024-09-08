@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Security.Claims;
 using Helpers;
 using Humanizer;
@@ -53,7 +54,7 @@ namespace RoomFinder4You
 
 
 
-        public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 5, string? keywords = null)
+        public async Task<IActionResult> Search(int pageNumber = 1, int pageSize = 5, string? keywords = null, int? cityId = null, int? priceMin = null, int? priceMax = null, int? ordering = null)
         {
             var ads = _context.Ads.Include(a => a.User)
                 .Include(a => a.adStatus)
@@ -66,25 +67,43 @@ namespace RoomFinder4You
             {
                 ads = ads.Where(ad => ad.Title.Contains(keywords) || ad.Description.Contains(keywords));
             }
-
-
+            if (cityId != null)
+            {
+                ads = ads.Where(ad => ad.room.location.city.Id == cityId);
+            }
+            if (priceMin != null)
+            {
+                ads = ads.Where(ad => ad.room.Price >= priceMin);
+            }
+            if (priceMax != null)
+            {
+                ads = ads.Where(ad => ad.room.Price <= priceMax);
+            }
+            if (ordering != null)
+            {
+                ads = OrderingAds(ads, ordering);
+            }
 
             PaginatedList<Ad> pagedAds = await PaginatedList<Ad>.CreateAsync(ads, pageNumber, pageSize);
             pagedAds.ToList().ForEach(a => a.ViewNumber++);
             _context.Ads.UpdateRange(pagedAds);
 
             await _context.SaveChangesAsync();
+            var list_prices = GetPrices(1, 6);
+
             ViewData["pageNumbers"] = (int)Math.Ceiling((decimal)ads.Count() / pageSize);
             ViewData["count"] = ads.Count();
             ViewData["currentPage"] = pageNumber;
             ViewData["pageSize"] = pageSize;
             ViewData["searched"] = keywords;
+            ViewData["CityId"] = cityId;
+            ViewData["CityIdList"] = new SelectList(_context.Cities.OrderBy(city => city.Name), "Id", "Name", cityId);
+            ViewData["PriceMinList"] = new SelectList(list_prices, "Key", "Value", priceMin);
+            ViewData["PriceMaxList"] = new SelectList(list_prices, "Key", "Value", priceMax);
+            ViewData["OrderingList"] = new SelectList(GetOrdering(), "Key", "Value", ordering);
+
             return View(pagedAds);
         }
-
-
-
-
 
 
         /// <summary>
@@ -691,6 +710,63 @@ namespace RoomFinder4You
             }
 
             return imageDatas;
+        }
+
+        /// <summary>
+        /// Ordering ads based on the int value.
+        /// </summary>
+        /// <param name="ads">Ads to be ordered</param>
+        /// <param name="order">Value to be order by</param>
+        /// <returns>Ordered ads</returns>
+        private IQueryable<Ad> OrderingAds(IQueryable<Ad> ads, int? order)
+        {
+            if (order == 0)
+            {
+                ads = ads.OrderBy(ad => ad.room.Price);
+            }
+            else if (order == 1)
+            {
+                ads = ads.OrderByDescending(ad => ad.room.Price);
+            }
+            else if (order == 2)
+            {
+                ads = ads.OrderByDescending(ad => ad.ClickNumber);
+            }
+            else if (order == 3)
+            {
+                ads = ads.OrderBy(ad => ad.ClickNumber);
+            }
+            return ads;
+        }
+        /// <summary>
+        /// Creates a Dictionary for choose prices.
+        /// </summary>
+        /// <param name="min">Minimum price of the dictionary * 100.</param>
+        /// <param name="max">Maximum price of the dictionary * 100.</param>
+        /// <returns>View with the add, if possible.</returns>
+        private Dictionary<int, int> GetPrices(int min, int max)
+        {
+            var list = new Dictionary<int, int>();
+            for (int i = min; i <= max; i++)
+            {
+                list.Add(i * 100, i * 100);
+            }
+            return list;
+        }
+        /// <summary>
+        /// Creates a Dictionary for ordering ads.
+        /// </summary>
+        /// <returns>The Dictionary</returns>
+
+        private Dictionary<int, string> GetOrdering()
+        {
+            var list = new Dictionary<int, string>();
+            int i = 0;
+            list.Add(i++, "Preço Crescente");
+            list.Add(i++, "Preço Decrescente");
+            list.Add(i++, "Mais Popular");
+            list.Add(i++, "Menos Popular");
+            return list;
         }
     }
 }
