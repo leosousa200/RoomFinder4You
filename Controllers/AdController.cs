@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Security.Claims;
 using Helpers;
+using System.Linq;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -66,6 +67,8 @@ namespace RoomFinder4You
                 .Include(a => a.room)
                 .Include(a => a.room.location)
                 .ThenInclude(a => a.city)
+                .Include(a => a.room.Features)
+                .ThenInclude(a => a.featureType)
                 .Where(ad => ad.adStatus.Id == 1);
 
             if (keywords != null)
@@ -202,7 +205,7 @@ namespace RoomFinder4You
             ModelState.Remove(nameof(ad.room)); ModelState.Remove(nameof(ad.User));
             ModelState.Remove(nameof(ad.UserID)); ModelState.Remove(nameof(ad.adStatus));
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && featuresInitials.TAM.All(char.IsDigit))
             {
                 // Room object creation
                 Room room = new Room();

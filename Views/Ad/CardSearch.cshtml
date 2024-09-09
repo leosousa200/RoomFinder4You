@@ -24,6 +24,11 @@
                     @Html.DisplayFor(modelItem =>
                              Model.room.location.Place)</h7>
             </div>
+            <div class="row mb-3">
+                <h7>Tamanho:
+                    @Html.DisplayFor(modelItem =>
+                             Model.room.Features.First(feat => feat.featureType.Initials.Equals("TAM")).Value) m2</h7>
+            </div>
             <div class="row text-end">
                 <h3>@Html.DisplayFor(modelItem
                              =>
